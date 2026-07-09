@@ -19,7 +19,7 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   });
 
@@ -99,7 +99,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   }) async {
     try {
@@ -111,9 +111,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (phoneNumber != null && phoneNumber.isNotEmpty) {
         body['phone_number'] = phoneNumber;
       }
-      // API expects role_ids as an array, not role_id as a string
-      if (roleId != null && roleId.isNotEmpty) {
-        body['role_ids'] = [roleId];
+      if (roleIds.isNotEmpty) {
+        body['role_ids'] = roleIds;
       }
       await _dio.post(ApiEndpoints.register, data: body);
     } on DioException catch (err) {
@@ -199,20 +198,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<List<RoleModel>> getRoles() async {
     try {
       // Roles are served from a different host — use a dedicated Dio instance
-      final rolesDio = Dio(BaseOptions(
-        baseUrl: ApiEndpoints.mainBaseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: const {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ));
+      final rolesDio = Dio(
+        BaseOptions(
+          baseUrl: ApiEndpoints.mainBaseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+          headers: const {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
       final response = await rolesDio.get(ApiEndpoints.roles);
       final body = response.data as Map<String, dynamic>;
       // Unwrap the data envelope: {"success": true, "data": [...]}
-      final List<dynamic> list =
-          (body['data'] as List<dynamic>?) ?? (body as List<dynamic>? ?? []);
+      final List<dynamic> list = (body['data'] as List<dynamic>?) ?? [];
       return list
           .map((item) => RoleModel.fromJson(item as Map<String, dynamic>))
           .toList();

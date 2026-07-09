@@ -9,7 +9,7 @@ abstract class DashboardRemoteDatasource {
 }
 
 class DashboardRemoteDatasourceImpl implements DashboardRemoteDatasource {
-  // Uses the shop Dio instance (base: AppConfig.shopBaseUrl = https://s.zoovana.net)
+  // Uses the Shop gateway client with authentication and error mapping.
   // which already has AuthInterceptor and ErrorInterceptor attached.
   final Dio _dio;
 
@@ -24,10 +24,8 @@ class DashboardRemoteDatasourceImpl implements DashboardRemoteDatasource {
   @override
   Future<DashboardOverviewModel> getDashboardOverview() async {
     try {
-      debugPrint('[DASHBOARD] GET /api/shop/api/v1/dashboard/overview');
-      final response = await _dio.get<dynamic>(
-        '/api/shop/api/v1/dashboard/overview',
-      );
+      debugPrint('[DASHBOARD] GET /api/v1/dashboard/overview');
+      final response = await _dio.get<dynamic>('/api/v1/dashboard/overview');
       debugPrint('[DASHBOARD] ${response.statusCode}');
 
       final data = response.data;

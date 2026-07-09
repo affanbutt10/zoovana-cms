@@ -11,8 +11,8 @@ class RegisterUseCase {
 
   /// Executes the register use case.
   ///
-  /// [email], [password], and [fullName] are required. [roleId] is optional
-  /// and selects a specific role for the new account.
+  /// [email], [password], and [fullName] are required. [roleIds] contains one
+  /// or more roles selected during onboarding.
   ///
   /// Returns [Result<void>] — success with null on success, or failure with
   /// a descriptive [AppError].
@@ -20,14 +20,14 @@ class RegisterUseCase {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   }) {
     return _repository.register(
       email: email,
       password: password,
       fullName: fullName,
-      roleId: roleId,
+      roleIds: roleIds,
       phoneNumber: phoneNumber,
     );
   }

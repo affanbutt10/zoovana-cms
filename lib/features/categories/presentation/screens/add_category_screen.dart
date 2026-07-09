@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../data/models/category_model.dart';
 import '../controllers/category_controller.dart';
 
@@ -21,10 +22,7 @@ import '../controllers/category_controller.dart';
 class AddCategoryScreen extends StatefulWidget {
   final String branchId;
 
-  const AddCategoryScreen({
-    super.key,
-    required this.branchId,
-  });
+  const AddCategoryScreen({super.key, required this.branchId});
 
   @override
   State<AddCategoryScreen> createState() => _AddCategoryScreenState();
@@ -35,7 +33,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _imagePicker = ImagePicker();
-  
+
   File? _selectedImage;
 
   @override
@@ -89,8 +87,11 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.add_photo_alternate_rounded,
-                          color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.add_photo_alternate_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -102,8 +103,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: Icon(Icons.close_rounded,
-                          color: AppColors.textSecondary),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textSecondary,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -152,7 +155,8 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
 
                       // Submit Button
                       Obx(() {
-                        final isCreating = controller.createStatus.value ==
+                        final isCreating =
+                            controller.createStatus.value ==
                             CategoryCreateStatus.creating;
 
                         return ElevatedButton(
@@ -201,8 +205,11 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline,
-                                      color: AppColors.error, size: 20),
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: AppColors.error,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -271,8 +278,11 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                             color: Colors.black.withValues(alpha: 0.6),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close_rounded,
-                              color: Colors.white, size: 18),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                         onPressed: () {
                           setState(() {
@@ -290,8 +300,11 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_photo_alternate_outlined,
-                            size: 48, color: AppColors.textTertiary),
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 48,
+                          color: AppColors.textTertiary,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Tap to add image',
@@ -339,10 +352,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             ),
             if (required) ...[
               const SizedBox(width: 4),
-              Text(
-                '*',
-                style: TextStyle(color: AppColors.error, fontSize: 16),
-              ),
+              Text('*', style: TextStyle(color: AppColors.error, fontSize: 16)),
             ],
           ],
         ),
@@ -383,8 +393,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.error, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ],
@@ -392,7 +404,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
   }
 
   void _showImageSourceDialog() {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
@@ -420,18 +432,24 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.camera_alt_rounded,
-                        color: AppColors.primary),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      color: AppColors.primary,
+                    ),
                   ),
-                  title: Text('Camera',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      )),
-                  subtitle: Text('Take a new photo',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      )),
+                  title: Text(
+                    'Camera',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Take a new photo',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.camera);
@@ -445,18 +463,24 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                       color: AppColors.accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.photo_library_rounded,
-                        color: AppColors.accent),
+                    child: Icon(
+                      Icons.photo_library_rounded,
+                      color: AppColors.accent,
+                    ),
                   ),
-                  title: Text('Gallery',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      )),
-                  subtitle: Text('Choose from gallery',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      )),
+                  title: Text(
+                    'Gallery',
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Choose from gallery',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.gallery);

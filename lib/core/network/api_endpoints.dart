@@ -47,7 +47,7 @@ class ApiEndpoints {
   static const String roles = '/api/v1/roles';
 
   /// Base URL for the main/roles service.
-  static const String mainBaseUrl = 'https://s.zoovana.net/api/main';
+  static const String mainBaseUrl = 'https://zoovana.net/api/main';
 
   /// GET — retrieve the authenticated user's profile.
   static const String userProfile = '/api/v1/users/me/profile';

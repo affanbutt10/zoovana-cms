@@ -28,6 +28,7 @@ class LocalStorageKeys {
   static const String zoovanaRoleStorage = 'zoovana_role_storage';
   static const String zoovanaRoleName = 'zoovana_role_name';
   static const String zoovanaRoleScope = 'zoovana_role_scope';
+  static const String assignedRoles = 'assigned_roles';
   static const String activeBranchId = 'active_branch_id';
 }
 
@@ -86,6 +87,7 @@ class LocalStorageServiceImpl implements LocalStorageService {
       prefs.remove(LocalStorageKeys.zoovanaRoleStorage),
       prefs.remove(LocalStorageKeys.zoovanaRoleName),
       prefs.remove(LocalStorageKeys.zoovanaRoleScope),
+      prefs.remove(LocalStorageKeys.assignedRoles),
       prefs.remove(LocalStorageKeys.activeBranchId),
     ]);
   }

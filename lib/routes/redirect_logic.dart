@@ -15,12 +15,14 @@ import 'app_routes.dart';
 const publicRoutes = {
   AppRoutes.login,
   AppRoutes.register,
-  AppRoutes.verifyEmail,   // accessible when unauthenticated (post-registration)
+  AppRoutes.verifyEmail, // accessible when unauthenticated (post-registration)
   AppRoutes.forgotPassword,
   AppRoutes.resetPassword,
   AppRoutes.pendingApproval,
   AppRoutes.splash,
 };
+
+const guestBrowseRoutes = {AppRoutes.home};
 
 // ---------------------------------------------------------------------------
 // App routes — accessible by any authenticated user regardless of role.
@@ -32,6 +34,32 @@ const appRoutes = {
   AppRoutes.donation,
   AppRoutes.lostFound,
   AppRoutes.profile,
+  AppRoutes.chatInbox,
+  AppRoutes.chatConversation,
+  AppRoutes.petOwnerDashboard,
+  AppRoutes.petOwnerPets,
+  AppRoutes.petOwnerServices,
+  AppRoutes.petOwnerBookings,
+  AppRoutes.petOwnerMessages,
+  AppRoutes.legacyPetcare,
+  AppRoutes.providerDashboard,
+  AppRoutes.providerServices,
+  AppRoutes.providerBookings,
+  AppRoutes.providerMessages,
+  AppRoutes.providerSettings,
+  AppRoutes.volunteerDashboard,
+  AppRoutes.shelterOverview,
+  AppRoutes.shelterList,
+  AppRoutes.shelterAnimals,
+  AppRoutes.shelterMedical,
+  AppRoutes.shelterVaccinations,
+  AppRoutes.shelterKennels,
+  AppRoutes.shelterAdoptions,
+  AppRoutes.shelterVolunteers,
+  AppRoutes.shelterDonations,
+  AppRoutes.shelterLostFound,
+  AppRoutes.shelterAnimalCare,
+  AppRoutes.shelterSettings,
   AppRoutes.settings,
   AppRoutes.dashboard,
 };
@@ -57,6 +85,9 @@ String? computeRedirect({
   required RoleEntity? selectedRole,
   required ShopInitStatus shopInitStatus,
 }) {
+  final routePath = Uri.tryParse(location)?.path ?? location;
+  const accountRequiredLogin = '${AppRoutes.login}?reason=account_required';
+
   // ── Demo / prototype mode ──────────────────────────────────────────────────
   // When demoMode is true, show the login screen first so the client can see
   // the auth flow, but skip all other guards once authenticated so every
@@ -64,17 +95,25 @@ String? computeRedirect({
   // Flip demoMode = false in dependency_injection.dart before going live.
   if (demoMode) {
     // Not yet authenticated — show login (or any public auth screen).
-    if (authStatus == AuthStatus.unauthenticated ||
-        authStatus == AuthStatus.loading) {
+    if (authStatus == AuthStatus.loading) {
       if (location == AppRoutes.login) return null;
-      return AppRoutes.login;
+      return AppRoutes.splash;
     }
-    // Authenticated — go to home if on a public/auth route, else allow through.
-    if (publicRoutes.contains(location)) return AppRoutes.home;
+    if (authStatus == AuthStatus.unauthenticated) {
+      if (publicRoutes.contains(routePath) ||
+          guestBrowseRoutes.contains(routePath)) {
+        return null;
+      }
+      return accountRequiredLogin;
+    }
+    // Authenticated users should land in the role-aware app, not the guest home.
+    if (publicRoutes.contains(routePath) || routePath == AppRoutes.home) {
+      return AppRoutes.dashboard;
+    }
     return null;
   }
 
-  final isPublic = publicRoutes.contains(location);
+  final isPublic = publicRoutes.contains(routePath);
 
   // Step 0: Auth is still loading.
   if (authStatus == AuthStatus.loading) {
@@ -88,8 +127,10 @@ String? computeRedirect({
   // after its exit animation completes, then the redirect fires again
   // on the new location (/home → /login for unauthenticated users).
   if (authStatus == AuthStatus.unauthenticated) {
-    if (location == AppRoutes.splash) return null; // let splash finish
-    return isPublic ? null : AppRoutes.login;
+    if (isPublic || guestBrowseRoutes.contains(routePath)) {
+      return null;
+    }
+    return accountRequiredLogin;
   }
 
   // Step 2: Pending approval — always redirect to pending-approval screen.
@@ -101,11 +142,12 @@ String? computeRedirect({
 
   // From here on the user is fully authenticated.
 
-  // Step 3: Authenticated user on a public route — send to home.
+  // Step 3: Authenticated user on a public route — send to dashboard.
   // Exception: /verify-email is allowed even when authenticated, so a user
   // who just registered and then logs in can still complete verification.
-  if (isPublic && location != AppRoutes.verifyEmail) {
-    return AppRoutes.home;
+  if ((isPublic && routePath != AppRoutes.verifyEmail) ||
+      routePath == AppRoutes.home) {
+    return AppRoutes.dashboard;
   }
 
   // Step 4 (email verification) is intentionally skipped.
@@ -131,8 +173,8 @@ String? computeRedirect({
   // Step 6: Non-superuser trying to access /admin — redirect to home.
   if (session != null &&
       !session.user.isSuperuser &&
-      location == AppRoutes.admin) {
-    return AppRoutes.home;
+      routePath == AppRoutes.admin) {
+    return AppRoutes.dashboard;
   }
 
   // Step 7: Shop owner role routing based on shop init status.
@@ -142,8 +184,8 @@ String? computeRedirect({
   final selectedRoleName = selectedRole.name.toLowerCase();
   if (selectedRoleName == 'shop_owner') {
     if (shopInitStatus == ShopInitStatus.ready) {
-      // Shop is ready — if still on the init screen, redirect to home.
-      if (location == AppRoutes.shopInit) return AppRoutes.home;
+      // Shop is ready — if still on the init screen, redirect to dashboard.
+      if (routePath == AppRoutes.shopInit) return AppRoutes.dashboard;
       return null;
     }
     // Not ready yet — send to init screen so it can load or retry.

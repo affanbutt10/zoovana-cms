@@ -27,30 +27,62 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = !isLoading && onPressed != null;
+
     return SizedBox(
       width: double.infinity,
       height: 48,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          disabledBackgroundColor: AppColors.primaryLight,
-          foregroundColor: AppColors.textOnPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.textOnPrimary,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isEnabled
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
+                ]
+              : null,
+        ),
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style:
+              ElevatedButton.styleFrom(
+                disabledBackgroundColor: AppColors.primaryDisabled,
+                foregroundColor: AppColors.textOnPrimary,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              )
-            : Text(label, style: AppTextStyles.button),
+                elevation: 0,
+              ).copyWith(
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.disabled)) {
+                    return AppColors.primaryDisabled;
+                  }
+                  if (states.contains(WidgetState.pressed)) {
+                    return AppColors.primaryPressed;
+                  }
+                  if (states.contains(WidgetState.hovered)) {
+                    return AppColors.primaryHover;
+                  }
+                  return AppColors.primary;
+                }),
+              ),
+          child: isLoading
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.textOnPrimary,
+                    ),
+                  ),
+                )
+              : Text(label, style: AppTextStyles.button),
+        ),
       ),
     );
   }

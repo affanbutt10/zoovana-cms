@@ -20,8 +20,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Hero floating animation
   late final AnimationController _floatCtrl;
   late final Animation<double> _floatAnim;
@@ -49,9 +48,10 @@ class _HomeScreenState extends State<HomeScreen>
       vsync: this,
       duration: const Duration(milliseconds: 2800),
     )..repeat(reverse: true);
-    _floatAnim = Tween<double>(begin: -6, end: 6).animate(
-      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
-    );
+    _floatAnim = Tween<double>(
+      begin: -6,
+      end: 6,
+    ).animate(CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut));
 
     // ── Entrance animation ───────────────────────────────────
     // Total duration: 1200ms. Each section gets a 120ms window,
@@ -104,10 +104,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _reveal(int index, Widget child) {
     return FadeTransition(
       opacity: _sectionFade[index],
-      child: SlideTransition(
-        position: _sectionSlide[index],
-        child: child,
-      ),
+      child: SlideTransition(position: _sectionSlide[index], child: child),
     );
   }
 
@@ -189,7 +186,8 @@ class _HomeScreenState extends State<HomeScreen>
                           height: 36,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                                colors: AppColors.primaryGradient),
+                              colors: AppColors.primaryGradient,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -211,72 +209,69 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
 
-              // // ── Search Bar ───────────────────────────────────
-              // SliverToBoxAdapter(child: _reveal(1, _SearchBar())),
+            // // ── Search Bar ───────────────────────────────────
+            // SliverToBoxAdapter(child: _reveal(1, _SearchBar())),
 
-              // ── Hero ─────────────────────────────────────────
-              SliverToBoxAdapter(
-                child: _reveal(2, _HeroSection(floatAnim: _floatAnim)),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            // ── Hero ─────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _reveal(2, _HeroSection(floatAnim: _floatAnim)),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-              // ── Categories ───────────────────────────────────
-              SliverToBoxAdapter(
-                child: _reveal(
-                  3,
-                  const _SectionHeader(title: 'Categories'),
+            // ── Categories ───────────────────────────────────
+            SliverToBoxAdapter(
+              child: _reveal(3, const _SectionHeader(title: 'Categories')),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            SliverToBoxAdapter(child: _reveal(3, _CategoriesRow())),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
+
+            // ── Featured Pets ────────────────────────────────
+            SliverToBoxAdapter(
+              child: _reveal(
+                4,
+                _SectionHeader(
+                  title: 'Available Pets',
+                  actionText: 'View All',
+                  onActionTap: () {},
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
-              SliverToBoxAdapter(child: _reveal(3, _CategoriesRow())),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 14)),
+            SliverToBoxAdapter(child: _reveal(4, const _FeaturedPets())),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-              // ── Featured Pets ────────────────────────────────
-              SliverToBoxAdapter(
-                child: _reveal(
-                  4,
-                  _SectionHeader(
-                    title: 'Available Pets',
-                    actionText: 'View All',
-                    onActionTap: () {},
-                  ),
+            // ── Services 2×2 grid ────────────────────────────
+            SliverToBoxAdapter(
+              child: _reveal(
+                5,
+                _SectionHeader(
+                  title: 'Our Services',
+                  actionText: 'See All',
+                  onActionTap: () {},
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 14)),
-              SliverToBoxAdapter(child: _reveal(4, const _FeaturedPets())),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 14)),
+            SliverToBoxAdapter(child: _reveal(5, _ServicesGrid())),
 
-              // ── Services 2×2 grid ────────────────────────────
-              SliverToBoxAdapter(
-                child: _reveal(
-                  5,
-                  _SectionHeader(
-                    title: 'Our Services',
-                    actionText: 'See All',
-                    onActionTap: () {},
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 14)),
-              SliverToBoxAdapter(child: _reveal(5, _ServicesGrid())),
+            // ── Trust Stats ──────────────────────────────────
+            SliverToBoxAdapter(child: _reveal(6, _TrustStats())),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-              // ── Trust Stats ──────────────────────────────────
-              SliverToBoxAdapter(child: _reveal(6, _TrustStats())),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            // ── About ────────────────────────────────────────
+            SliverToBoxAdapter(child: _reveal(7, _AboutSection())),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-              // ── About ────────────────────────────────────────
-              SliverToBoxAdapter(child: _reveal(7, _AboutSection())),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            // ── CTA ──────────────────────────────────────────
+            SliverToBoxAdapter(child: _reveal(7, _CTASection())),
 
-              // ── CTA ──────────────────────────────────────────
-              SliverToBoxAdapter(child: _reveal(7, _CTASection())),
-
-              // Bottom nav clearance
-              const SliverToBoxAdapter(child: SizedBox(height: 110)),
-            ],
-          ),
+            // Bottom nav clearance
+            const SliverToBoxAdapter(child: SizedBox(height: 110)),
+          ],
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -379,7 +374,10 @@ class _HeroSection extends StatelessWidget {
             children: [
               // Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
@@ -426,15 +424,9 @@ class _HeroSection extends StatelessWidget {
               // CTA buttons
               Row(
                 children: [
-                  _PrimaryBtn(
-                    label: 'Get Started',
-                    onTap: () {},
-                  ),
+                  _PrimaryBtn(label: 'Get Started', onTap: () {}),
                   const SizedBox(width: 10),
-                  _OutlineBtn(
-                    label: 'Adopt a Pet',
-                    onTap: () {},
-                  ),
+                  _OutlineBtn(label: 'Adopt a Pet', onTap: () {}),
                 ],
               ),
             ],
@@ -581,14 +573,14 @@ class _PetCard extends StatelessWidget {
     return Container(
       width: 168,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: br,
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -598,8 +590,12 @@ class _PetCard extends StatelessWidget {
           // Image area
           ClipRRect(
             borderRadius: BorderRadius.only(
-              topLeft: isAlt ? const Radius.circular(22) : const Radius.circular(72),
-              topRight: isAlt ? const Radius.circular(72) : const Radius.circular(22),
+              topLeft: isAlt
+                  ? const Radius.circular(22)
+                  : const Radius.circular(72),
+              topRight: isAlt
+                  ? const Radius.circular(72)
+                  : const Radius.circular(22),
             ),
             child: Container(
               height: 140,
@@ -640,8 +636,11 @@ class _PetCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined,
-                        color: AppColors.primary, size: 13),
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.primary,
+                      size: 13,
+                    ),
                     const SizedBox(width: 3),
                     Expanded(
                       child: Text(
@@ -673,17 +672,28 @@ class _PetData {
   const _PetData(this.name, this.breed, this.location, this.icon);
 }
 
-
 /* ══════════════════════════════════════════════════════════════ */
 /*  SERVICES  2×2 GRID                                           */
 /* ══════════════════════════════════════════════════════════════ */
 
 class _ServicesGrid extends StatelessWidget {
   static const _services = [
-    _SvcData('Pet Adoption', 'Find & adopt your perfect companion', Icons.pets_rounded),
+    _SvcData(
+      'Pet Adoption',
+      'Find & adopt your perfect companion',
+      Icons.pets_rounded,
+    ),
     _SvcData('Pet Care', 'Expert care guidance & tips', Icons.favorite_rounded),
-    _SvcData('Pet Shop', 'Quality supplies & products', Icons.shopping_bag_rounded),
-    _SvcData('Pet Health', 'Medical records & vaccination', Icons.health_and_safety_rounded),
+    _SvcData(
+      'Pet Shop',
+      'Quality supplies & products',
+      Icons.shopping_bag_rounded,
+    ),
+    _SvcData(
+      'Pet Health',
+      'Medical records & vaccination',
+      Icons.health_and_safety_rounded,
+    ),
   ];
 
   @override
@@ -713,7 +723,7 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: AppColors.surfaceAtElevation(1),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
@@ -806,11 +816,17 @@ class _TrustStats extends StatelessWidget {
       ),
       child: Row(
         children: const [
-          Expanded(child: _Stat(value: '5K+', label: 'Pets Adopted')),
+          Expanded(
+            child: _Stat(value: '5K+', label: 'Pets Adopted'),
+          ),
           _StatDivider(),
-          Expanded(child: _Stat(value: '100+', label: 'Active Shelters')),
+          Expanded(
+            child: _Stat(value: '100+', label: 'Active Shelters'),
+          ),
           _StatDivider(),
-          Expanded(child: _Stat(value: '50K+', label: 'Pet Parents')),
+          Expanded(
+            child: _Stat(value: '50K+', label: 'Pet Parents'),
+          ),
         ],
       ),
     );
@@ -871,14 +887,14 @@ class _AboutSection extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -919,19 +935,20 @@ class _AboutSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Center(
-                    child: Text('🐕🐈', style: TextStyle(fontSize: 72)),
-                  ),
+                  Center(child: Text('🐕🐈', style: TextStyle(fontSize: 72))),
                   // Experience badge
                   Positioned(
                     bottom: 14,
                     left: 16,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7),
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                            colors: AppColors.primaryGradient),
+                          colors: AppColors.primaryGradient,
+                        ),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -1006,8 +1023,11 @@ class _AboutSection extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded,
-                          color: AppColors.primary, size: 16),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: AppColors.primary,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ),
@@ -1070,9 +1090,9 @@ class _CTASection extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -1201,8 +1221,11 @@ class _SectionHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_rounded,
-                      size: 15, color: AppColors.primary),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 15,
+                    color: AppColors.primary,
+                  ),
                 ],
               ),
             ),
@@ -1237,9 +1260,9 @@ class _PrimaryBtn extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.30),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),

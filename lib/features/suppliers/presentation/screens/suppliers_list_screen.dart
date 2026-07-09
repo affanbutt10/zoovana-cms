@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../../shop/presentation/controllers/shop_init_controller.dart';
 import '../controllers/supplier_controller.dart';
 import 'add_supplier_screen.dart';
@@ -45,8 +46,11 @@ class SuppliersListScreen extends GetView<SupplierController> {
             scrolledUnderElevation: 1,
             toolbarHeight: 60,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: AppColors.textPrimary, size: 20),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
               onPressed: () => context.pop(),
             ),
             title: Row(
@@ -59,14 +63,20 @@ class SuppliersListScreen extends GetView<SupplierController> {
                     color: AppColors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(Icons.local_shipping_rounded,
-                      color: AppColors.accent, size: 17),
+                  child: Icon(
+                    Icons.local_shipping_rounded,
+                    color: AppColors.accent,
+                    size: 17,
+                  ),
                 ),
                 const SizedBox(width: 10),
-                Text('Suppliers',
-                    style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800)),
+                Text(
+                  'Suppliers',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
             actions: [
@@ -91,8 +101,11 @@ class SuppliersListScreen extends GetView<SupplierController> {
                         ),
                       ],
                     ),
-                    child: Icon(Icons.add_rounded,
-                        color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   onPressed: () => _showAddSupplierScreen(context, branchId),
                 ),
@@ -125,8 +138,11 @@ class SuppliersListScreen extends GetView<SupplierController> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline,
-                            color: AppColors.error, size: 48),
+                        Icon(
+                          Icons.error_outline,
+                          color: AppColors.error,
+                          size: 48,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           controller.errorMessage.value,
@@ -161,8 +177,11 @@ class SuppliersListScreen extends GetView<SupplierController> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.local_shipping_outlined,
-                            color: AppColors.textTertiary, size: 64),
+                        Icon(
+                          Icons.local_shipping_outlined,
+                          color: AppColors.textTertiary,
+                          size: 64,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'No suppliers yet',
@@ -189,7 +208,9 @@ class SuppliersListScreen extends GetView<SupplierController> {
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -230,7 +251,8 @@ class SuppliersListScreen extends GetView<SupplierController> {
                       onTap: () => SupplierDetailSheet.show(context, supplier),
                     );
                   },
-                  childCount: controller.suppliers.length +
+                  childCount:
+                      controller.suppliers.length +
                       (controller.hasMore.value ? 1 : 0),
                 ),
               ),
@@ -242,7 +264,7 @@ class SuppliersListScreen extends GetView<SupplierController> {
   }
 
   void _showAddSupplierScreen(BuildContext context, String branchId) {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -271,14 +293,14 @@ class _SupplierCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -298,8 +320,11 @@ class _SupplierCard extends StatelessWidget {
                     color: AppColors.accent.withValues(alpha: 0.11),
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: Icon(Icons.business_rounded,
-                      color: AppColors.accent, size: 24),
+                  child: Icon(
+                    Icons.business_rounded,
+                    color: AppColors.accent,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -320,8 +345,11 @@ class _SupplierCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.person_outline,
-                                size: 14, color: AppColors.textTertiary),
+                            Icon(
+                              Icons.person_outline,
+                              size: 14,
+                              color: AppColors.textTertiary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -341,8 +369,11 @@ class _SupplierCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.phone_outlined,
-                                size: 14, color: AppColors.textTertiary),
+                            Icon(
+                              Icons.phone_outlined,
+                              size: 14,
+                              color: AppColors.textTertiary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -362,8 +393,11 @@ class _SupplierCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.email_outlined,
-                                size: 14, color: AppColors.textTertiary),
+                            Icon(
+                              Icons.email_outlined,
+                              size: 14,
+                              color: AppColors.textTertiary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -383,8 +417,11 @@ class _SupplierCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textTertiary, size: 20),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
               ],
             ),
           ),

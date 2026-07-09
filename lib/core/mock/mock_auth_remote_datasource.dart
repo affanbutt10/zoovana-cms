@@ -38,7 +38,7 @@ class MockAuthRemoteDataSource implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   }) async {
     await Future.delayed(const Duration(milliseconds: 600));

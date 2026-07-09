@@ -57,9 +57,21 @@ class UserModel {
     fullName: (json['full_name'] ?? '').toString(),
     isSuperuser: (json['is_superuser'] as bool?) ?? false,
     isEmailVerified: (json['is_email_verified'] as bool?) ?? false,
-    roles: ((json['roles'] as List<dynamic>?) ?? [])
-        .map((r) => RoleModel.fromJson(r as Map<String, dynamic>))
-        .toList(),
+    // Login responses may contain full role objects, while the profile API
+    // returns role names such as "shop_owner" and "shelter". Support both.
+    roles: ((json['roles'] as List<dynamic>?) ?? []).map((role) {
+      if (role is Map<String, dynamic>) {
+        return RoleModel.fromJson(role);
+      }
+      final name = role.toString();
+      return RoleModel(
+        // Profile role strings do not include UUIDs. The stable name is
+        // sufficient for local selection, persistence, and dashboard routing.
+        id: name,
+        name: name,
+        scope: 'tenant',
+      );
+    }).toList(),
     defaultTenantId: (json['default_tenant_id'] ?? '').toString(),
   );
 

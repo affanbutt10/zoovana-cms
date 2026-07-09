@@ -5,6 +5,7 @@ import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
 import '../../../../shared/widgets/app_empty_state.dart';
 import '../../../../shared/widgets/app_loader.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../viewmodels/product_viewmodel.dart';
 import '../widgets/product_list_item.dart';
 
@@ -123,7 +124,7 @@ class _ProductListState extends State<_ProductList> {
   }
 
   Future<void> _confirmDelete(BuildContext context, String productId) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete product'),

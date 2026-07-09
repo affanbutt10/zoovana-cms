@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/error/app_error.dart';
 import '../../../../core/error/result.dart';
 import '../../../../core/storage/local_storage_service.dart';
@@ -55,6 +57,21 @@ class AuthRepositoryImpl implements AuthRepository {
           LocalStorageKeys.defaultTenantId,
           user.defaultTenantId,
         ),
+        _localStorage.setString(
+          LocalStorageKeys.assignedRoles,
+          jsonEncode(
+            user.roles
+                .map(
+                  (role) => {
+                    'id': role.id,
+                    'name': role.name,
+                    'scope': role.scope,
+                    'description': role.description,
+                  },
+                )
+                .toList(),
+          ),
+        ),
       ]);
 
       return Success(session.toEntity());
@@ -70,7 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   }) async {
     try {
@@ -78,7 +95,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         fullName: fullName,
-        roleId: roleId,
+        roleIds: roleIds,
         phoneNumber: phoneNumber,
       );
       return const Success(null);

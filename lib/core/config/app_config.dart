@@ -13,10 +13,19 @@ class AppConfig {
   static const String authBaseUrl = 'https://api.auth.zoovana.net';
 
   /// Base URL for the Shop Service (business & branches init).
-  static const String shopBaseUrl = 'https://api.shop.zoovana.net';
+  static const String shopBaseUrl = 'https://zoovana.net/api/shop';
 
   /// Base URL for the CMS Service (dashboard, suppliers, categories, products).
-  static const String cmsBaseUrl = 'https://s.zoovana.net';
+  ///
+  /// Legacy CMS data sources include `/api/shop` in their request paths, so
+  /// this client targets the public gateway root.
+  static const String cmsBaseUrl = 'https://zoovana.net';
+
+  /// Base URL for shelter-owner and volunteer APIs.
+  static const String shelterBaseUrl = 'https://zoovana.net/api/shelter';
+
+  /// Base URL for pet-owner, provider, and messaging APIs.
+  static const String petCareBaseUrl = 'https://zoovana.net/api/petcare';
 
   // ---------------------------------------------------------------------------
   // Dio timeout constants

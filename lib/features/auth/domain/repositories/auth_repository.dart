@@ -22,7 +22,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   });
 

@@ -208,7 +208,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
                         const SizedBox(height: 12),
                         Text(
                           _email.isNotEmpty
-                              ? 'Enter the 6-digit code sent to\n$_email'
+                              ? 'Enter the 4-digit code sent to\n$_email'
                               : 'Enter the verification code sent to your email.',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
@@ -226,9 +226,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
                             border: Border.all(color: AppColors.glassBorder),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
+                                color: Colors.black.withValues(alpha: 0.10),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
@@ -241,11 +241,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
                                 hint: '••••••',
                                 prefixIcon: Icons.pin_outlined,
                                 keyboardType: TextInputType.number,
-                                maxLength: 6,
+                                maxLength: 4,
                                 textAlign: TextAlign.center,
                                 validator: (value) =>
-                                    value == null || value.trim().length < 6
-                                    ? 'Enter the 6-digit code.'
+                                    value == null || value.trim().length != 4
+                                    ? 'Enter the 4-digit code.'
                                     : null,
                                 onFieldSubmitted: (_) => _verify(),
                               ),

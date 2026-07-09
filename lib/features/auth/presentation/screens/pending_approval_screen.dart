@@ -53,7 +53,10 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() { _isRefreshing = true; _refreshError = null; });
+    setState(() {
+      _isRefreshing = true;
+      _refreshError = null;
+    });
 
     final repo = GetIt.instance<AuthRepository>();
     final result = await repo.getRoles();
@@ -66,9 +69,11 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
         // Roles loaded — account may now be active, re-trigger auth check
         Get.find<AuthController>().status.value = AuthStatus.authenticated;
       case Failure(:final error):
-        setState(() => _refreshError = error.networkError
-            ? 'No internet connection.'
-            : 'Your account is still pending approval.');
+        setState(
+          () => _refreshError = error.networkError
+              ? 'No internet connection.'
+              : 'Your account is still pending approval.',
+        );
     }
   }
 
@@ -84,7 +89,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
           content: const Text('Phone number copied to clipboard'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -98,7 +105,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
           content: const Text('Email address copied to clipboard'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -112,7 +121,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
     final horizontalPadding = screenWidth < 360 ? 16.0 : 20.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBF8F0), // warm cream bg matching screenshot
+      backgroundColor: const Color(
+        0xFFFBF8F0,
+      ), // warm cream bg matching screenshot
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
@@ -147,9 +158,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -187,7 +198,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // Subtitle
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Text(
                         'Your account has been created but your business setup is not yet complete.',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -212,7 +225,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // ── Account Details card ─────────────────
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -254,7 +269,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // ── What Happens Next card ───────────────
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -283,7 +300,8 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                             const SizedBox(height: 6),
                             _NextStep(
                               number: '2.',
-                              text: 'Full dashboard access is enabled after approval',
+                              text:
+                                  'Full dashboard access is enabled after approval',
                             ),
                           ],
                         ),
@@ -293,7 +311,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // ── Info message ─────────────────────────
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
@@ -320,7 +340,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // ── SuperAdmin Contact card ───────────────
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -385,7 +407,12 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                     // ── Error message ────────────────────────
                     if (_refreshError != null)
                       Padding(
-                        padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 12),
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding,
+                          0,
+                          horizontalPadding,
+                          12,
+                        ),
                         child: Text(
                           _refreshError!,
                           style: AppTextStyles.labelSmall.copyWith(
@@ -397,7 +424,12 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
 
                     // ── Buttons ──────────────────────────────
                     Padding(
-                      padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 24),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        0,
+                        horizontalPadding,
+                        24,
+                      ),
                       child: screenWidth < 380
                           ? Column(
                               children: [
@@ -411,8 +443,14 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                             width: 16,
                                             height: 16,
                                             child: CircularProgressIndicator(
-                                                color: Colors.white, strokeWidth: 2))
-                                        : const Icon(Icons.refresh_rounded, size: 18),
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.refresh_rounded,
+                                            size: 18,
+                                          ),
                                     label: Text(
                                       'Refresh Status',
                                       style: AppTextStyles.labelMedium.copyWith(
@@ -424,7 +462,8 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                       backgroundColor: AppColors.primary,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                       elevation: 0,
                                     ),
                                   ),
@@ -435,7 +474,10 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                   height: 48,
                                   child: OutlinedButton.icon(
                                     onPressed: _logout,
-                                    icon: const Icon(Icons.logout_rounded, size: 18),
+                                    icon: const Icon(
+                                      Icons.logout_rounded,
+                                      size: 18,
+                                    ),
                                     label: Text(
                                       'Log Out',
                                       style: AppTextStyles.labelMedium.copyWith(
@@ -445,9 +487,12 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                     ),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: AppColors.textPrimary,
-                                      side: BorderSide(color: AppColors.divider),
+                                      side: BorderSide(
+                                        color: AppColors.divider,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -463,8 +508,14 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                             width: 16,
                                             height: 16,
                                             child: CircularProgressIndicator(
-                                                color: Colors.white, strokeWidth: 2))
-                                        : const Icon(Icons.refresh_rounded, size: 18),
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.refresh_rounded,
+                                            size: 18,
+                                          ),
                                     label: Text(
                                       'Refresh Status',
                                       style: AppTextStyles.labelMedium.copyWith(
@@ -475,9 +526,12 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                       elevation: 0,
                                     ),
                                   ),
@@ -486,7 +540,10 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     onPressed: _logout,
-                                    icon: const Icon(Icons.logout_rounded, size: 18),
+                                    icon: const Icon(
+                                      Icons.logout_rounded,
+                                      size: 18,
+                                    ),
                                     label: Text(
                                       'Log Out',
                                       style: AppTextStyles.labelMedium.copyWith(
@@ -496,10 +553,15 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                     ),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: AppColors.textPrimary,
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      side: BorderSide(color: AppColors.divider),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      side: BorderSide(
+                                        color: AppColors.divider,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -535,7 +597,11 @@ class _DetailRow extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String text;
-  const _DetailRow({required this.icon, required this.color, required this.text});
+  const _DetailRow({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -567,18 +633,22 @@ class _NextStep extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(number,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: const Color(0xFFB45309),
-              fontWeight: FontWeight.w700,
-            )),
+        Text(
+          number,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: const Color(0xFFB45309),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(width: 6),
         Expanded(
-          child: Text(text,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: const Color(0xFFB45309),
-                height: 1.4,
-              )),
+          child: Text(
+            text,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: const Color(0xFFB45309),
+              height: 1.4,
+            ),
+          ),
         ),
       ],
     );
@@ -589,7 +659,11 @@ class _ContactBtn extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _ContactBtn({required this.icon, required this.label, required this.onTap});
+  const _ContactBtn({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

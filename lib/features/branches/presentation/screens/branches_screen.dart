@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../../../core/error/result.dart';
 import '../../../../core/network/dio_factory.dart';
 import '../../../../core/storage/local_storage_service.dart';
@@ -56,8 +57,10 @@ class _BranchesScreenState extends State<BranchesScreen> {
     );
     _repo = BranchRepository(BranchRemoteDataSourceImpl(shopDio));
     if (kDebugMode) {
-      debugPrint('[Branches] Initialized with shop base URL: '
-          '${shopDio.options.baseUrl}');
+      debugPrint(
+        '[Branches] Initialized with shop base URL: '
+        '${shopDio.options.baseUrl}',
+      );
     }
     _load();
   }
@@ -92,12 +95,14 @@ class _BranchesScreenState extends State<BranchesScreen> {
     _filtered = q.isEmpty
         ? List.from(_all)
         : _all
-            .where((b) =>
-                b.nameEn.toLowerCase().contains(q) ||
-                b.nameAr.contains(q) ||
-                b.contactEmail.toLowerCase().contains(q) ||
-                b.slug.toLowerCase().contains(q))
-            .toList();
+              .where(
+                (b) =>
+                    b.nameEn.toLowerCase().contains(q) ||
+                    b.nameAr.contains(q) ||
+                    b.contactEmail.toLowerCase().contains(q) ||
+                    b.slug.toLowerCase().contains(q),
+              )
+              .toList();
   }
 
   void _onSearch(String v) {
@@ -108,7 +113,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
   }
 
   Future<void> _openCreateSheet() async {
-    final created = await showModalBottomSheet<BranchEntity>(
+    final created = await showPremiumBottomSheet<BranchEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -128,9 +133,13 @@ class _BranchesScreenState extends State<BranchesScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded, size: 20),
-        label: Text('Add Branch',
-            style: AppTextStyles.labelMedium.copyWith(
-                color: Colors.white, fontWeight: FontWeight.w700)),
+        label: Text(
+          'Add Branch',
+          style: AppTextStyles.labelMedium.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         elevation: 4,
       ),
       body: CustomScrollView(
@@ -145,27 +154,37 @@ class _BranchesScreenState extends State<BranchesScreen> {
             scrolledUnderElevation: 1,
             toolbarHeight: 60,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: AppColors.textPrimary, size: 20),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
               onPressed: () => context.pop(),
             ),
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 32, height: 32,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: AppColors.secondary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(Icons.account_tree_rounded,
-                      color: AppColors.secondary, size: 17),
+                  child: Icon(
+                    Icons.account_tree_rounded,
+                    color: AppColors.secondary,
+                    size: 17,
+                  ),
                 ),
                 const SizedBox(width: 10),
-                Text('Branches',
-                    style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800)),
+                Text(
+                  'Branches',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
             actions: [
@@ -174,7 +193,9 @@ class _BranchesScreenState extends State<BranchesScreen> {
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(999),
@@ -182,8 +203,9 @@ class _BranchesScreenState extends State<BranchesScreen> {
                     child: Text(
                       '$_total ${_total == 1 ? 'branch' : 'branches'}',
                       style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700),
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -201,15 +223,10 @@ class _BranchesScreenState extends State<BranchesScreen> {
 
           // ── Body ─────────────────────────────────────────
           if (_loading)
-            const SliverFillRemaining(
-              child: Center(child: _Loader()),
-            )
+            const SliverFillRemaining(child: Center(child: _Loader()))
           else if (_error != null)
             SliverFillRemaining(
-              child: _ErrorState(
-                message: _error!,
-                onRetry: () => _load(),
-              ),
+              child: _ErrorState(message: _error!, onRetry: () => _load()),
             )
           else if (_filtered.isEmpty)
             SliverFillRemaining(
@@ -223,7 +240,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
               sliver: SliverList.separated(
                 itemCount: _filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (_, i) => _BranchCard(branch: _filtered[i]),
               ),
             ),
@@ -232,7 +249,9 @@ class _BranchesScreenState extends State<BranchesScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 16),
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -241,8 +260,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
                           label: 'Previous',
                           onTap: () => _load(page: _page - 1),
                         ),
-                      if (_page > 1 && _hasNext)
-                        const SizedBox(width: 12),
+                      if (_page > 1 && _hasNext) const SizedBox(width: 12),
                       if (_hasNext)
                         _PageBtn(
                           label: 'Next',
@@ -274,7 +292,7 @@ class _BranchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isActive = branch.isActive;
     return Material(
-      color: AppColors.surface,
+      color: AppColors.surfaceAtElevation(1),
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -287,8 +305,8 @@ class _BranchCard extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -299,13 +317,17 @@ class _BranchCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 44, height: 44,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: AppColors.secondary.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: Icon(Icons.store_rounded,
-                        color: AppColors.secondary, size: 22),
+                    child: Icon(
+                      Icons.store_rounded,
+                      color: AppColors.secondary,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -315,9 +337,10 @@ class _BranchCard extends StatelessWidget {
                         Text(
                           branch.nameEn,
                           style: AppTextStyles.labelLarge.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15),
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -325,7 +348,9 @@ class _BranchCard extends StatelessWidget {
                         Text(
                           branch.slug,
                           style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.textTertiary, fontSize: 11),
+                            color: AppColors.textTertiary,
+                            fontSize: 11,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -366,13 +391,18 @@ class _BranchCard extends StatelessWidget {
               // Footer
               Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined,
-                      size: 13, color: AppColors.textTertiary),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: AppColors.textTertiary,
+                  ),
                   const SizedBox(width: 5),
                   Text(
                     'Created ${branch.formattedDate}',
                     style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.textTertiary, fontSize: 11),
+                      color: AppColors.textTertiary,
+                      fontSize: 11,
+                    ),
                   ),
                   const Spacer(),
                   // Edit
@@ -416,17 +446,18 @@ class _StatusBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6, height: 6,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color,
-            ),
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
           ),
           const SizedBox(width: 5),
           Text(
             active ? 'Active' : 'Inactive',
             style: AppTextStyles.labelSmall.copyWith(
-                color: color, fontWeight: FontWeight.w700, fontSize: 11),
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
           ),
         ],
       ),
@@ -450,7 +481,9 @@ class _InfoChip extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textSecondary, fontSize: 12),
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -464,8 +497,11 @@ class _ActionIconBtn extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
-  const _ActionIconBtn(
-      {required this.icon, required this.color, required this.onTap});
+  const _ActionIconBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -497,14 +533,14 @@ class _SearchField extends StatelessWidget {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -513,13 +549,19 @@ class _SearchField extends StatelessWidget {
         style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Search branches...',
-          hintStyle: AppTextStyles.bodySmall
-              .copyWith(color: AppColors.textTertiary),
-          prefixIcon: Icon(Icons.search_rounded,
-              color: AppColors.textSecondary, size: 20),
+          hintStyle: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: AppColors.textSecondary,
+            size: 20,
+          ),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -538,14 +580,14 @@ class _Loader extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        CircularProgressIndicator(
-          color: AppColors.primary,
-          strokeWidth: 2.5,
-        ),
+        CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5),
         const SizedBox(height: 16),
-        Text('Loading branches...',
-            style: AppTextStyles.labelSmall
-                .copyWith(color: AppColors.textSecondary)),
+        Text(
+          'Loading branches...',
+          style: AppTextStyles.labelSmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -564,23 +606,34 @@ class _ErrorState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 64, height: 64,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.wifi_off_rounded,
-                color: AppColors.error, size: 30),
+            child: Icon(
+              Icons.wifi_off_rounded,
+              color: AppColors.error,
+              size: 30,
+            ),
           ),
           const SizedBox(height: 16),
-          Text('Something went wrong',
-              style: AppTextStyles.titleSmall.copyWith(
-                  color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+          Text(
+            'Something went wrong',
+            style: AppTextStyles.titleSmall.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(message,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary)),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: onRetry,
@@ -590,7 +643,8 @@ class _ErrorState extends StatelessWidget {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -612,19 +666,25 @@ class _EmptyState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 72, height: 72,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: AppColors.secondary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.account_tree_rounded,
-                color: AppColors.secondary, size: 34),
+            child: Icon(
+              Icons.account_tree_rounded,
+              color: AppColors.secondary,
+              size: 34,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             hasQuery ? 'No results found' : 'No branches yet',
             style: AppTextStyles.titleSmall.copyWith(
-                color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -632,8 +692,9 @@ class _EmptyState extends StatelessWidget {
                 ? 'Try adjusting your search'
                 : 'Add your first branch to get started',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           if (!hasQuery) ...[
             const SizedBox(height: 24),
@@ -645,7 +706,8 @@ class _EmptyState extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -659,8 +721,11 @@ class _PageBtn extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final bool primary;
-  const _PageBtn(
-      {required this.label, required this.onTap, this.primary = false});
+  const _PageBtn({
+    required this.label,
+    required this.onTap,
+    this.primary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -672,10 +737,13 @@ class _PageBtn extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Text(label,
-              style: AppTextStyles.labelMedium.copyWith(
-                  color: primary ? Colors.white : AppColors.textPrimary,
-                  fontWeight: FontWeight.w700)),
+          child: Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(
+              color: primary ? Colors.white : AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );
@@ -747,17 +815,21 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
   void _goNext() {
     if (_step1Key.currentState?.validate() ?? false) {
       setState(() => _step = 1);
-      _pageCtrl.animateToPage(1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic);
+      _pageCtrl.animateToPage(
+        1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
   void _goBack() {
     setState(() => _step = 0);
-    _pageCtrl.animateToPage(0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic);
+    _pageCtrl.animateToPage(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _submit() async {
@@ -794,7 +866,8 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       case Failure(:final error):
@@ -810,13 +883,13 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(2),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 32,
-            offset: const Offset(0, -8),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -828,7 +901,8 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
           Center(
             child: Container(
               margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: AppColors.divider,
                 borderRadius: BorderRadius.circular(2),
@@ -842,33 +916,45 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
             child: Row(
               children: [
                 Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(Icons.account_tree_rounded,
-                      color: AppColors.primary, size: 22),
+                  child: Icon(
+                    Icons.account_tree_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Create Your Branch',
-                          style: AppTextStyles.titleMedium.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 18)),
-                      Text('Set up your branch to start selling on Zoovana',
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textSecondary)),
+                      Text(
+                        'Create Your Branch',
+                        style: AppTextStyles.titleMedium.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        'Set up your branch to start selling on Zoovana',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      color: AppColors.textSecondary),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textSecondary,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -912,11 +998,7 @@ class _CreateBranchSheetState extends State<_CreateBranchSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: _step == 0
-                ? _PrimaryButton(
-                    label: 'Next',
-                    onTap: _goNext,
-                    loading: false,
-                  )
+                ? _PrimaryButton(label: 'Next', onTap: _goNext, loading: false)
                 : Row(
                     children: [
                       Expanded(
@@ -959,9 +1041,7 @@ class _StepIndicator extends StatelessWidget {
           Expanded(
             child: Container(
               height: 2,
-              color: currentStep >= 1
-                  ? AppColors.primary
-                  : AppColors.divider,
+              color: currentStep >= 1 ? AppColors.primary : AppColors.divider,
             ),
           ),
           _StepDot(index: 1, current: currentStep, label: 'Contact Info'),
@@ -975,8 +1055,11 @@ class _StepDot extends StatelessWidget {
   final int index;
   final int current;
   final String label;
-  const _StepDot(
-      {required this.index, required this.current, required this.label});
+  const _StepDot({
+    required this.index,
+    required this.current,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -987,32 +1070,34 @@ class _StepDot extends StatelessWidget {
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          width: 32, height: 32,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           child: Center(
             child: done
-                ? const Icon(Icons.check_rounded,
-                    color: Colors.white, size: 16)
-                : Text('${index + 1}',
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                : Text(
+                    '${index + 1}',
                     style: AppTextStyles.labelMedium.copyWith(
-                        color: (done || active)
-                            ? Colors.white
-                            : AppColors.textTertiary,
-                        fontWeight: FontWeight.w800)),
+                      color: (done || active)
+                          ? Colors.white
+                          : AppColors.textTertiary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
           ),
         ),
         const SizedBox(height: 4),
-        Text(label,
-            style: AppTextStyles.labelSmall.copyWith(
-                color: (done || active)
-                    ? AppColors.primary
-                    : AppColors.textTertiary,
-                fontWeight:
-                    active ? FontWeight.w700 : FontWeight.w400,
-                fontSize: 11)),
+        Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            color: (done || active)
+                ? AppColors.primary
+                : AppColors.textTertiary,
+            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+            fontSize: 11,
+          ),
+        ),
       ],
     );
   }
@@ -1180,17 +1265,24 @@ class _Step2Form extends StatelessWidget {
                   color: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.25)),
+                    color: AppColors.error.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline_rounded,
-                        color: AppColors.error, size: 18),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      color: AppColors.error,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(error!,
-                          style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.error)),
+                      child: Text(
+                        error!,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -1245,15 +1337,22 @@ class _FormField extends StatelessWidget {
               Icon(prefixIcon, size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 5),
             ],
-            Text(label,
-                style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12)),
+            Text(
+              label,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
             if (required)
-              Text(' *',
-                  style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.error, fontWeight: FontWeight.w700)),
+              Text(
+                ' *',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 6),
@@ -1263,27 +1362,37 @@ class _FormField extends StatelessWidget {
           keyboardType: keyboardType,
           textDirection: textDirection,
           onChanged: onChanged,
-          style: AppTextStyles.bodySmall
-              .copyWith(color: AppColors.textPrimary, fontSize: 13),
-          validator: validator ??
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: 13,
+          ),
+          validator:
+              validator ??
               (required
-                  ? (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null
+                  ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
                   : null),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textTertiary, fontSize: 12),
+            hintStyle: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textTertiary,
+              fontSize: 12,
+            ),
             prefixText: prefix,
             prefixStyle: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textSecondary, fontSize: 12),
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
             helperText: helperText,
             helperStyle: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textTertiary, fontSize: 10),
+              color: AppColors.textTertiary,
+              fontSize: 10,
+            ),
             filled: true,
             fillColor: AppColors.surfaceVariant,
             contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+              horizontal: 14,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.divider),
@@ -1294,8 +1403,7 @@ class _FormField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1303,8 +1411,7 @@ class _FormField extends StatelessWidget {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),
@@ -1319,8 +1426,11 @@ class _PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool loading;
-  const _PrimaryButton(
-      {required this.label, required this.onTap, required this.loading});
+  const _PrimaryButton({
+    required this.label,
+    required this.onTap,
+    required this.loading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1334,17 +1444,26 @@ class _PrimaryButton extends StatelessWidget {
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
         child: loading
             ? const SizedBox(
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2))
-            : Text(label,
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                label,
                 style: AppTextStyles.labelLarge.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.w800)),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
       ),
     );
   }
@@ -1365,12 +1484,16 @@ class _OutlineButton extends StatelessWidget {
           foregroundColor: AppColors.textPrimary,
           side: BorderSide(color: AppColors.divider),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
-        child: Text(label,
-            style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700)),
+        child: Text(
+          label,
+          style: AppTextStyles.labelLarge.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }

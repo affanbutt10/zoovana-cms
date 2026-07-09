@@ -1,11 +1,18 @@
 // Feature: zoovana-mobile-ui
 // Requirements: 8.2, 8.3
 
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_colors.dart';
 import '../../core/config/app_text_styles.dart';
+import 'ios_dashboard_chrome.dart';
+import 'premium_motion.dart';
+import 'role_dashboard_drawer.dart';
 
 /// Premium floating bottom navigation bar shell.
 ///
@@ -19,13 +26,47 @@ class CustomerBottomNavShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: navigationShell,
+      body: TweenAnimationBuilder<double>(
+        key: ValueKey(navigationShell.currentIndex),
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 350),
+        curve: PremiumMotion.curve,
+        child: navigationShell,
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: FractionalTranslation(
+              translation: Offset(0.018 * (1 - value), 0.012 * (1 - value)),
+              child: child,
+            ),
+          );
+        },
+      ),
       extendBody: true,
-      bottomNavigationBar: _PremiumBottomNav(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: RoleDashboardDrawerController.isOpen,
+        builder: (context, drawerOpen, child) {
+          return AnimatedSlide(
+            offset: drawerOpen ? const Offset(0, 1.2) : Offset.zero,
+            duration: const Duration(milliseconds: 220),
+            curve: PremiumMotion.curve,
+            child: AnimatedOpacity(
+              opacity: drawerOpen ? 0 : 1,
+              duration: const Duration(milliseconds: 160),
+              curve: PremiumMotion.curve,
+              child: IgnorePointer(ignoring: drawerOpen, child: child),
+            ),
+          );
+        },
+        child: _PremiumBottomNav(
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) {
+            HapticFeedback.lightImpact();
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
         ),
       ),
     );
@@ -49,24 +90,23 @@ class _PremiumBottomNavState extends State<_PremiumBottomNav>
 
   static const _items = [
     _NavItem(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_rounded,
+      icon: CupertinoIcons.hand_raised,
+      activeIcon: CupertinoIcons.hand_raised_fill,
+      label: 'Services',
+    ),
+    _NavItem(
+      icon: CupertinoIcons.heart,
+      activeIcon: CupertinoIcons.heart_fill,
+      label: 'Adopt',
+    ),
+    _NavItem(
+      icon: CupertinoIcons.house,
+      activeIcon: CupertinoIcons.house_fill,
       label: 'Home',
     ),
     _NavItem(
-      icon: Icons.volunteer_activism_outlined,
-      activeIcon: Icons.volunteer_activism,
-      label: 'Services',
-    ),
-    _NavItem(icon: Icons.pets_outlined, activeIcon: Icons.pets, label: 'Adopt'),
-    _NavItem(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-    ),
-    _NavItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
+      icon: CupertinoIcons.person,
+      activeIcon: CupertinoIcons.person_fill,
       label: 'Profile',
     ),
   ];
@@ -85,8 +125,8 @@ class _PremiumBottomNavState extends State<_PremiumBottomNav>
         .map(
           (c) => Tween<double>(
             begin: 1.0,
-            end: 1.2,
-          ).animate(CurvedAnimation(parent: c, curve: Curves.elasticOut)),
+            end: 1.12,
+          ).animate(CurvedAnimation(parent: c, curve: PremiumMotion.curve)),
         )
         .toList();
     // Animate initial selected
@@ -113,85 +153,88 @@ class _PremiumBottomNavState extends State<_PremiumBottomNav>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.glassBorder, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 24,
-              spreadRadius: 0,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              blurRadius: 16,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(_items.length, (i) {
-            final item = _items[i];
-            final isSelected = i == widget.currentIndex;
-            return GestureDetector(
-              onTap: () => widget.onTap(i),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedBuilder(
-                animation: _scaleAnims[i],
-                builder: (context, child) => Transform.scale(
-                  scale: isSelected ? _scaleAnims[i].value : 1.0,
-                  child: child,
-                ),
-                child: SizedBox(
-                  width: 60,
-                  height: 70,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: isSelected ? 48 : 36,
-                        height: isSelected ? 36 : 36,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primary.withValues(alpha: 0.15)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          isSelected ? item.activeIcon : item.icon,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 250),
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                          fontSize: 10,
-                        ),
-                        child: Text(item.label),
-                      ),
-                    ],
-                  ),
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            height: 82,
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 18),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.82),
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.divider.withValues(alpha: 0.55),
                 ),
               ),
-            );
-          }),
+              boxShadow: iosCardShadows(AppColors.primary),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(_items.length, (i) {
+                final item = _items[i];
+                final isSelected = i == widget.currentIndex;
+                return IosPressable(
+                  onTap: () => widget.onTap(i),
+                  scale: 0.90,
+                  borderRadius: BorderRadius.circular(16),
+                  child: AnimatedBuilder(
+                    animation: _scaleAnims[i],
+                    builder: (context, child) => Transform.scale(
+                      scale: isSelected ? _scaleAnims[i].value : 1.0,
+                      child: child,
+                    ),
+                    child: SizedBox(
+                      width: 62,
+                      height: 56,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            width: isSelected ? 42 : 34,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primaryGlow.withValues(
+                                      alpha: 0.95,
+                                    )
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Icon(
+                              isSelected ? item.activeIcon : item.icon,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 21,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: 10,
+                            ),
+                            child: Text(item.label),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );

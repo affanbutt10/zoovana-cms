@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../../shop/presentation/controllers/shop_init_controller.dart';
 import '../controllers/category_controller.dart';
 import 'add_category_screen.dart';
@@ -46,8 +47,11 @@ class CategoriesListScreen extends GetView<CategoryController> {
             scrolledUnderElevation: 1,
             toolbarHeight: 60,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: AppColors.textPrimary, size: 20),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
               onPressed: () => context.pop(),
             ),
             title: Row(
@@ -60,14 +64,20 @@ class CategoriesListScreen extends GetView<CategoryController> {
                     color: AppColors.highlight.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(Icons.category_rounded,
-                      color: AppColors.highlight, size: 17),
+                  child: Icon(
+                    Icons.category_rounded,
+                    color: AppColors.highlight,
+                    size: 17,
+                  ),
                 ),
                 const SizedBox(width: 10),
-                Text('Categories',
-                    style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800)),
+                Text(
+                  'Categories',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
             actions: [
@@ -92,8 +102,11 @@ class CategoriesListScreen extends GetView<CategoryController> {
                         ),
                       ],
                     ),
-                    child: Icon(Icons.add_rounded,
-                        color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   onPressed: () => _showAddCategoryScreen(context, branchId),
                 ),
@@ -126,8 +139,11 @@ class CategoriesListScreen extends GetView<CategoryController> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline,
-                            color: AppColors.error, size: 48),
+                        Icon(
+                          Icons.error_outline,
+                          color: AppColors.error,
+                          size: 48,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           controller.errorMessage.value,
@@ -162,8 +178,11 @@ class CategoriesListScreen extends GetView<CategoryController> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.category_outlined,
-                            color: AppColors.textTertiary, size: 64),
+                        Icon(
+                          Icons.category_outlined,
+                          color: AppColors.textTertiary,
+                          size: 64,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'No categories yet',
@@ -190,7 +209,9 @@ class CategoriesListScreen extends GetView<CategoryController> {
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -234,7 +255,8 @@ class CategoriesListScreen extends GetView<CategoryController> {
                       onTap: () => CategoryDetailSheet.show(context, category),
                     );
                   },
-                  childCount: controller.categories.length +
+                  childCount:
+                      controller.categories.length +
                       (controller.hasMore.value ? 1 : 0),
                 ),
               ),
@@ -246,7 +268,7 @@ class CategoriesListScreen extends GetView<CategoryController> {
   }
 
   void _showAddCategoryScreen(BuildContext context, String branchId) {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -274,14 +296,14 @@ class _CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -315,15 +337,21 @@ class _CategoryCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Center(
-                              child: Icon(Icons.category_rounded,
-                                  color: AppColors.highlight, size: 40),
+                              child: Icon(
+                                Icons.category_rounded,
+                                color: AppColors.highlight,
+                                size: 40,
+                              ),
                             );
                           },
                         ),
                       )
                     : Center(
-                        child: Icon(Icons.category_rounded,
-                            color: AppColors.highlight, size: 40),
+                        child: Icon(
+                          Icons.category_rounded,
+                          color: AppColors.highlight,
+                          size: 40,
+                        ),
                       ),
               ),
 
@@ -359,7 +387,9 @@ class _CategoryCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 3),
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),

@@ -136,4 +136,65 @@ class DioFactory {
 
     return dio;
   }
+
+  /// Creates a client for the Shelter Service gateway.
+  static Dio createShelterDio({
+    required SecureStorageService secureStorage,
+    required LocalStorageService localStorage,
+    required void Function() onForceSignOut,
+  }) {
+    return _createServiceDio(
+      baseUrl: AppConfig.shelterBaseUrl,
+      secureStorage: secureStorage,
+      localStorage: localStorage,
+      onForceSignOut: onForceSignOut,
+    );
+  }
+
+  /// Creates a client for the Pet Care Service gateway.
+  static Dio createPetCareDio({
+    required SecureStorageService secureStorage,
+    required LocalStorageService localStorage,
+    required void Function() onForceSignOut,
+  }) {
+    return _createServiceDio(
+      baseUrl: AppConfig.petCareBaseUrl,
+      secureStorage: secureStorage,
+      localStorage: localStorage,
+      onForceSignOut: onForceSignOut,
+    );
+  }
+
+  static Dio _createServiceDio({
+    required String baseUrl,
+    required SecureStorageService secureStorage,
+    required LocalStorageService localStorage,
+    required void Function() onForceSignOut,
+  }) {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: AppConfig.connectTimeout,
+        receiveTimeout: AppConfig.receiveTimeout,
+        headers: const {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    dio.interceptors.addAll([
+      LocaleInterceptor(),
+      LoggerInterceptor(),
+      ErrorInterceptor(),
+      AuthInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        localStorage: localStorage,
+        onForceSignOut: onForceSignOut,
+      ),
+    ]);
+
+    return dio;
+  }
 }

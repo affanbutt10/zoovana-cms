@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../domain/entities/supplier_entity.dart';
 
 class SupplierDetailSheet extends StatelessWidget {
@@ -10,7 +11,7 @@ class SupplierDetailSheet extends StatelessWidget {
   const SupplierDetailSheet({super.key, required this.supplier});
 
   static void show(BuildContext context, SupplierEntity supplier) {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -32,9 +33,9 @@ class SupplierDetailSheet extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 40,
-                offset: const Offset(0, -8),
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -115,14 +116,16 @@ class SupplierDetailSheet extends StatelessWidget {
                         _DetailRow(
                           icon: Icons.calendar_today_rounded,
                           label: 'Created',
-                          value: DateFormat('dd MMM yyyy · HH:mm')
-                              .format(supplier.createdAt.toLocal()),
+                          value: DateFormat(
+                            'dd MMM yyyy · HH:mm',
+                          ).format(supplier.createdAt.toLocal()),
                         ),
                         _DetailRow(
                           icon: Icons.update_rounded,
                           label: 'Last Updated',
-                          value: DateFormat('dd MMM yyyy · HH:mm')
-                              .format(supplier.updatedAt.toLocal()),
+                          value: DateFormat(
+                            'dd MMM yyyy · HH:mm',
+                          ).format(supplier.updatedAt.toLocal()),
                         ),
                         _DetailRow(
                           icon: Icons.fingerprint_rounded,
@@ -185,8 +188,11 @@ class _SupplierHeader extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.business_rounded,
-                color: Colors.white, size: 26),
+            child: const Icon(
+              Icons.business_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -224,8 +230,11 @@ class _SupplierHeader extends StatelessWidget {
                 color: AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.close_rounded,
-                  color: AppColors.textSecondary, size: 18),
+              child: Icon(
+                Icons.close_rounded,
+                color: AppColors.textSecondary,
+                size: 18,
+              ),
             ),
             onPressed: () => Navigator.pop(context),
           ),
@@ -275,14 +284,14 @@ class _DetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: const Offset(0, 3),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -318,17 +327,20 @@ class _DetailCard extends StatelessWidget {
           ),
           Divider(height: 1, color: AppColors.divider),
           // Rows
-          ...children.asMap().entries.map((e) => Column(
-                children: [
-                  e.value,
-                  if (e.key < children.length - 1)
-                    Divider(
-                        height: 1,
-                        indent: 52,
-                        endIndent: 16,
-                        color: AppColors.divider),
-                ],
-              )),
+          ...children.asMap().entries.map(
+            (e) => Column(
+              children: [
+                e.value,
+                if (e.key < children.length - 1)
+                  Divider(
+                    height: 1,
+                    indent: 52,
+                    endIndent: 16,
+                    color: AppColors.divider,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -446,8 +458,11 @@ class _MiniChip extends StatelessWidget {
   final String label;
   final Color color;
   final IconData icon;
-  const _MiniChip(
-      {required this.label, required this.color, required this.icon});
+  const _MiniChip({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {

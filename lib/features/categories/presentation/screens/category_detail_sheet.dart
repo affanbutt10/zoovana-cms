@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../domain/entities/category_entity.dart';
 
 class CategoryDetailSheet extends StatelessWidget {
@@ -10,7 +11,7 @@ class CategoryDetailSheet extends StatelessWidget {
   const CategoryDetailSheet({super.key, required this.category});
 
   static void show(BuildContext context, CategoryEntity category) {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -20,8 +21,7 @@ class CategoryDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage =
-        category.imageUrl != null && category.imageUrl!.isNotEmpty;
+    final hasImage = category.imageUrl != null && category.imageUrl!.isNotEmpty;
 
     return DraggableScrollableSheet(
       initialChildSize: hasImage ? 0.88 : 0.72,
@@ -35,9 +35,9 @@ class CategoryDetailSheet extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 40,
-                offset: const Offset(0, -8),
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -56,13 +56,14 @@ class CategoryDetailSheet extends StatelessWidget {
                         children: [
                           ClipRRect(
                             borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(28)),
+                              top: Radius.circular(28),
+                            ),
                             child: Image.network(
                               category.imageUrl!,
                               height: 220,
                               width: double.infinity,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (_, _, _) =>
                                   _ImagePlaceholder(color: AppColors.highlight),
                             ),
                           ),
@@ -86,11 +87,7 @@ class CategoryDetailSheet extends StatelessWidget {
                             ),
                           ),
                           // Close button
-                          Positioned(
-                            top: 12,
-                            right: 12,
-                            child: _CloseButton(),
-                          ),
+                          Positioned(top: 12, right: 12, child: _CloseButton()),
                         ],
                       ),
 
@@ -117,15 +114,19 @@ class CategoryDetailSheet extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.highlight
-                                        .withValues(alpha: 0.35),
+                                    color: AppColors.highlight.withValues(
+                                      alpha: 0.35,
+                                    ),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: const Icon(Icons.category_rounded,
-                                  color: Colors.white, size: 26),
+                              child: const Icon(
+                                Icons.category_rounded,
+                                color: Colors.white,
+                                size: 26,
+                              ),
                             ),
                           Expanded(
                             child: Column(
@@ -168,9 +169,7 @@ class CategoryDetailSheet extends StatelessWidget {
                               icon: Icons.description_rounded,
                               iconColor: AppColors.primary,
                               title: 'Description',
-                              children: [
-                                _NoteRow(text: category.description!),
-                              ],
+                              children: [_NoteRow(text: category.description!)],
                             ),
                             const SizedBox(height: 14),
                           ],
@@ -184,14 +183,16 @@ class CategoryDetailSheet extends StatelessWidget {
                               _DetailRow(
                                 icon: Icons.calendar_today_rounded,
                                 label: 'Created',
-                                value: DateFormat('dd MMM yyyy · HH:mm')
-                                    .format(category.createdAt.toLocal()),
+                                value: DateFormat(
+                                  'dd MMM yyyy · HH:mm',
+                                ).format(category.createdAt.toLocal()),
                               ),
                               _DetailRow(
                                 icon: Icons.update_rounded,
                                 label: 'Last Updated',
-                                value: DateFormat('dd MMM yyyy · HH:mm')
-                                    .format(category.updatedAt.toLocal()),
+                                value: DateFormat(
+                                  'dd MMM yyyy · HH:mm',
+                                ).format(category.updatedAt.toLocal()),
                               ),
                               _DetailRow(
                                 icon: Icons.fingerprint_rounded,
@@ -246,13 +247,17 @@ class _CloseButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
+              color: Colors.black.withValues(alpha: 0.10),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Icon(Icons.close_rounded,
-            color: AppColors.textSecondary, size: 18),
+        child: Icon(
+          Icons.close_rounded,
+          color: AppColors.textSecondary,
+          size: 18,
+        ),
       ),
     );
   }
@@ -298,14 +303,14 @@ class _DetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset: const Offset(0, 3),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -339,17 +344,20 @@ class _DetailCard extends StatelessWidget {
             ),
           ),
           Divider(height: 1, color: AppColors.divider),
-          ...children.asMap().entries.map((e) => Column(
-                children: [
-                  e.value,
-                  if (e.key < children.length - 1)
-                    Divider(
-                        height: 1,
-                        indent: 52,
-                        endIndent: 16,
-                        color: AppColors.divider),
-                ],
-              )),
+          ...children.asMap().entries.map(
+            (e) => Column(
+              children: [
+                e.value,
+                if (e.key < children.length - 1)
+                  Divider(
+                    height: 1,
+                    indent: 52,
+                    endIndent: 16,
+                    color: AppColors.divider,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -445,8 +453,11 @@ class _MiniChip extends StatelessWidget {
   final String label;
   final Color color;
   final IconData icon;
-  const _MiniChip(
-      {required this.label, required this.color, required this.icon});
+  const _MiniChip({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {

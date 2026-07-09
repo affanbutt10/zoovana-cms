@@ -169,7 +169,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 width: 90,
                                 height: 90,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: AppColors.primary.withValues(
@@ -201,7 +203,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                         const SizedBox(height: 12),
                         Text(
                           _email.isNotEmpty
-                              ? 'Enter the 6-digit code sent to\n$_email'
+                              ? 'Enter the 4-digit code sent to\n$_email'
                               : 'Enter the code and your new password.',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
@@ -219,9 +221,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                             border: Border.all(color: AppColors.glassBorder),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
+                                color: Colors.black.withValues(alpha: 0.10),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
@@ -234,10 +236,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 hint: '••••••',
                                 prefixIcon: Icons.pin_outlined,
                                 keyboardType: TextInputType.number,
-                                maxLength: 6,
+                                maxLength: 4,
                                 validator: (value) =>
-                                    value == null || value.trim().length < 6
-                                    ? 'Enter the 6-digit code.'
+                                    value == null || value.trim().length != 4
+                                    ? 'Enter the 4-digit code.'
                                     : null,
                               ),
                               const SizedBox(height: 20),
@@ -535,9 +537,9 @@ class _PremiumButton extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
       ),

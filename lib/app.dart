@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 
 import 'core/config/app_colors.dart';
 import 'core/theme/app_theme_controller.dart';
+import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'routes/app_router.dart';
+import 'shared/widgets/role_switcher.dart';
 
 /// Root widget of the Zoovana CMS application.
 ///
@@ -36,7 +39,10 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       vsync: this,
     );
 
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
 
     // Initialize both themes to the current mode so lerp at value=1.0
     // produces the correct theme immediately on startup (no animation).
@@ -70,11 +76,16 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
     final statusBarBrightness = isDarkMode ? Brightness.dark : Brightness.light;
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        // Use an explicit color instead of transparency. Some screens respect
+        // the top safe-area and therefore do not paint behind the status bar,
+        // which otherwise exposes Android's black window background.
+        statusBarColor: AppColors.background,
         statusBarIconBrightness: iconBrightness,
         statusBarBrightness: statusBarBrightness,
         systemNavigationBarColor: AppColors.background,
         systemNavigationBarIconBrightness: iconBrightness,
+        systemStatusBarContrastEnforced: false,
+        systemNavigationBarContrastEnforced: false,
       ),
     );
   }
@@ -111,9 +122,23 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
               darkTheme: interpolated,
               themeMode: ThemeMode.light,
               builder: (context, child) {
-                return KeyedSubtree(
-                  key: ValueKey(_themeVersion),
-                  child: child ?? const SizedBox.shrink(),
+                return Stack(
+                  children: [
+                    KeyedSubtree(
+                      key: ValueKey(_themeVersion),
+                      child: child ?? const SizedBox.shrink(),
+                    ),
+                    Obx(() {
+                      final authController = Get.find<AuthController>();
+                      if (authController.status.value !=
+                          AuthStatus.authenticated) {
+                        return const SizedBox.shrink();
+                      }
+                      return const Positioned.fill(
+                        child: CollapsibleRoleSwitcher(),
+                      );
+                    }),
+                  ],
                 );
               },
             );
@@ -128,6 +153,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         ? ThemeData.dark(useMaterial3: true)
         : ThemeData.light(useMaterial3: true);
     return base.copyWith(
+      platform: TargetPlatform.iOS,
       brightness: isDarkMode ? Brightness.dark : Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       colorScheme:
@@ -145,9 +171,15 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
             onError: AppColors.white,
             outline: AppColors.divider,
           ),
-      textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+      textTheme: base.textTheme.apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
+      ),
+      cupertinoOverrideTheme: CupertinoThemeData(
+        brightness: isDarkMode ? Brightness.dark : Brightness.light,
+        primaryColor: AppColors.primary,
+        scaffoldBackgroundColor: AppColors.background,
+        textTheme: CupertinoTextThemeData(primaryColor: AppColors.textPrimary),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
@@ -156,7 +188,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         elevation: 0,
         centerTitle: false,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: GoogleFonts.outfit(
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
@@ -169,6 +201,13 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppColors.divider, width: 1),
         ),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        },
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -219,13 +258,13 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.inter(
+            return TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
             );
           }
-          return GoogleFonts.inter(
+          return TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
             color: AppColors.textSecondary,
@@ -241,10 +280,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       dividerTheme: DividerThemeData(color: AppColors.divider, thickness: 1),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textPrimary,
-        contentTextStyle: GoogleFonts.inter(
-          color: AppColors.white,
-          fontSize: 14,
-        ),
+        contentTextStyle: TextStyle(color: AppColors.white, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),

@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme_controller.dart';
 import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../features/auth/presentation/controllers/role_controller.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../../../shared/widgets/role_switcher.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -91,17 +92,17 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
-    
+
     return GetBuilder<AuthController>(
       builder: (authController) {
         final user = authController.session.value?.user;
         final fullName = user?.fullName ?? 'User';
         final email = user?.email ?? 'user@example.com';
         final isVerified = user?.isEmailVerified ?? false;
-        
+
         // Get first letter of name for avatar
         final initial = fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U';
-        
+
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -214,9 +215,10 @@ class _ProfileHeader extends StatelessWidget {
                     Expanded(
                       child: GetBuilder<RoleController>(
                         builder: (roleController) {
-                          final selectedRole = roleController.selectedRole.value;
+                          final selectedRole =
+                              roleController.selectedRole.value;
                           final roleName = selectedRole?.name ?? 'User';
-                          
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -246,7 +248,9 @@ class _ProfileHeader extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     _Badge(
                                       label: '✓ Verified',
-                                      color: AppColors.success.withValues(alpha: 0.2),
+                                      color: AppColors.success.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       textColor: AppColors.success,
                                       bordered: true,
                                     ),
@@ -286,7 +290,7 @@ class _ProfileHeader extends StatelessWidget {
       },
     );
   }
-  
+
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
@@ -310,7 +314,9 @@ class _Badge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bordered ? Colors.transparent : color,
         borderRadius: BorderRadius.circular(20),
-        border: bordered ? Border.all(color: textColor.withValues(alpha: 0.4)) : null,
+        border: bordered
+            ? Border.all(color: textColor.withValues(alpha: 0.4))
+            : null,
       ),
       child: Text(
         label,
@@ -336,7 +342,7 @@ class _ProfileTab extends StatelessWidget {
         final email = user?.email ?? 'user@example.com';
         final isVerified = user?.isEmailVerified ?? false;
         final isSuperuser = user?.isSuperuser ?? false;
-        
+
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
           children: [
@@ -364,7 +370,7 @@ class _ProfileTab extends StatelessWidget {
                     builder: (roleController) {
                       final roles = roleController.roles;
                       final selectedRole = roleController.selectedRole.value;
-                      
+
                       if (roles.length > 1) {
                         return Column(
                           children: [
@@ -372,18 +378,23 @@ class _ProfileTab extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               child: Row(
                                 children: [
-                                  Icon(Icons.badge_outlined,
-                                      color: AppColors.textSecondary, size: 18),
+                                  Icon(
+                                    Icons.badge_outlined,
+                                    color: AppColors.textSecondary,
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Active Role',
-                                          style: AppTextStyles.labelSmall.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
+                                          style: AppTextStyles.labelSmall
+                                              .copyWith(
+                                                color: AppColors.textSecondary,
+                                              ),
                                         ),
                                         const SizedBox(height: 4),
                                         const RoleSwitcher(),
@@ -397,7 +408,7 @@ class _ProfileTab extends StatelessWidget {
                           ],
                         );
                       }
-                      
+
                       // Single role - show as badge
                       return Column(
                         children: [
@@ -477,7 +488,7 @@ class _ProfileTab extends StatelessWidget {
             // Sign out button
             GestureDetector(
               onTap: () async {
-                final confirmed = await showDialog<bool>(
+                final confirmed = await showPremiumDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: AppColors.surface,
@@ -529,12 +540,18 @@ class _ProfileTab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
+                    Icon(
+                      Icons.logout_rounded,
+                      color: AppColors.error,
+                      size: 20,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       'Sign Out',
@@ -552,7 +569,7 @@ class _ProfileTab extends StatelessWidget {
       },
     );
   }
-  
+
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

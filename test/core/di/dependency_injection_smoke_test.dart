@@ -97,8 +97,7 @@ class _FakeLocalStorage implements LocalStorageService {
   Future<String?> getString(String key) async => _store[key] as String?;
 
   @override
-  Future<void> setString(String key, String value) async =>
-      _store[key] = value;
+  Future<void> setString(String key, String value) async => _store[key] = value;
 
   @override
   Future<bool?> getBool(String key) async => _store[key] as bool?;
@@ -159,13 +158,15 @@ class _MockAuthDataSource implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
   }) async {}
 
   @override
-  Future<void> verifyEmail({required String email, required String otp}) async {
-  }
+  Future<void> verifyEmail({
+    required String email,
+    required String otp,
+  }) async {}
 
   @override
   Future<void> resendVerification(String email) async {}
@@ -215,7 +216,7 @@ class _MockShopDataSource implements ShopRemoteDataSource {
           'address': '123 Main St',
           'is_active': true,
           'created_at': '2024-01-01T00:00:00.000Z',
-        }
+        },
       ],
     });
   }
@@ -242,15 +243,15 @@ class _StubAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
-  }) async =>
-      const Success(null);
+  }) async => const Success(null);
 
   @override
-  Future<Result<void>> verifyEmail(
-          {required String email, required String otp}) async =>
-      const Success(null);
+  Future<Result<void>> verifyEmail({
+    required String email,
+    required String otp,
+  }) async => const Success(null);
 
   @override
   Future<Result<void>> resendVerification(String email) async =>
@@ -261,17 +262,17 @@ class _StubAuthRepository implements AuthRepository {
       const Success(null);
 
   @override
-  Future<Result<void>> verifyOtp(
-          {required String email, required String otp}) async =>
-      const Success(null);
+  Future<Result<void>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async => const Success(null);
 
   @override
   Future<Result<void>> resetPassword({
     required String email,
     required String otp,
     required String newPassword,
-  }) async =>
-      const Success(null);
+  }) async => const Success(null);
 
   @override
   Future<Result<void>> logout() async => const Success(null);
@@ -360,16 +361,10 @@ void _registerControllers({
     permanent: true,
   );
 
-  Get.put<RoleController>(
-    RoleController(localStorage: ls),
-    permanent: true,
-  );
+  Get.put<RoleController>(RoleController(localStorage: ls), permanent: true);
 
   Get.put<ShopInitController>(
-    ShopInitController(
-      shopInitUseCase: shopInitUseCase,
-      localStorage: ls,
-    ),
+    ShopInitController(shopInitUseCase: shopInitUseCase, localStorage: ls),
     permanent: true,
   );
 }
@@ -427,13 +422,15 @@ void main() {
     });
 
     // Test 4: All three controllers resolve in the same registration pass
-    test('4. All three controllers resolve after a single registration pass',
-        () {
-      _registerControllers();
-      expect(Get.find<AuthController>(), isA<AuthController>());
-      expect(Get.find<RoleController>(), isA<RoleController>());
-      expect(Get.find<ShopInitController>(), isA<ShopInitController>());
-    });
+    test(
+      '4. All three controllers resolve after a single registration pass',
+      () {
+        _registerControllers();
+        expect(Get.find<AuthController>(), isA<AuthController>());
+        expect(Get.find<RoleController>(), isA<RoleController>());
+        expect(Get.find<ShopInitController>(), isA<ShopInitController>());
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -452,8 +449,7 @@ void main() {
     });
 
     // Test 5: authDio has correct base URL
-    test(
-        '5. getIt<Dio>(instanceName: authDio) resolves with '
+    test('5. getIt<Dio>(instanceName: authDio) resolves with '
         'baseUrl == "${AppConfig.authBaseUrl}"', () {
       final authDio = getIt<dio.Dio>(instanceName: 'authDio');
       expect(authDio, isA<dio.Dio>());
@@ -466,8 +462,7 @@ void main() {
     });
 
     // Test 6: shopDio has correct base URL
-    test(
-        '6. getIt<Dio>(instanceName: shopDio) resolves with '
+    test('6. getIt<Dio>(instanceName: shopDio) resolves with '
         'baseUrl == "${AppConfig.shopBaseUrl}"', () {
       final shopDio = getIt<dio.Dio>(instanceName: 'shopDio');
       expect(shopDio, isA<dio.Dio>());
@@ -485,8 +480,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('Test 7 — AuthInterceptor injects Authorization header', () {
-    test(
-        '7. AuthInterceptor injects "Authorization: Bearer <token>" when '
+    test('7. AuthInterceptor injects "Authorization: Bearer <token>" when '
         'a token is present in SecureStorageService', () async {
       const testToken = 'test_access_token_abc123';
 
@@ -495,8 +489,9 @@ void main() {
 
       final fakeLocalStorage = _FakeLocalStorage();
 
-      final dioInstance =
-          dio.Dio(dio.BaseOptions(baseUrl: AppConfig.authBaseUrl));
+      final dioInstance = dio.Dio(
+        dio.BaseOptions(baseUrl: AppConfig.authBaseUrl),
+      );
 
       final interceptor = AuthInterceptor(
         dio: dioInstance,
@@ -527,14 +522,14 @@ void main() {
       );
     });
 
-    test(
-        '7b. AuthInterceptor does NOT inject Authorization header when '
+    test('7b. AuthInterceptor does NOT inject Authorization header when '
         'no token is present in SecureStorageService', () async {
       final fakeStorage = _FakeSecureStorage(); // empty — no token stored
       final fakeLocalStorage = _FakeLocalStorage();
 
-      final dioInstance =
-          dio.Dio(dio.BaseOptions(baseUrl: AppConfig.authBaseUrl));
+      final dioInstance = dio.Dio(
+        dio.BaseOptions(baseUrl: AppConfig.authBaseUrl),
+      );
 
       final interceptor = AuthInterceptor(
         dio: dioInstance,
@@ -571,8 +566,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('Test 8 — AuthRepository.login calls POST /api/v1/auth/login', () {
-    test(
-        '8. AuthRepository.login calls POST ${ApiEndpoints.login} '
+    test('8. AuthRepository.login calls POST ${ApiEndpoints.login} '
         'with {email, password} body', () async {
       const testEmail = 'user@example.com';
       const testPassword = 'secret123';
@@ -607,11 +601,9 @@ void main() {
   //         /api/v1/businesses/me/with-branches
   // -------------------------------------------------------------------------
 
-  group(
-      'Test 9 — ShopRepository.getBusinessWithBranches calls '
+  group('Test 9 — ShopRepository.getBusinessWithBranches calls '
       'GET ${ApiEndpoints.businessMeWithBranches}', () {
-    test(
-        '9. ShopRepository.getBusinessWithBranches delegates to '
+    test('9. ShopRepository.getBusinessWithBranches delegates to '
         'ShopRemoteDataSource.getBusinessWithBranches', () async {
       final mockDataSource = _MockShopDataSource();
       final fakeLocalStorage = _FakeLocalStorage();

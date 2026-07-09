@@ -63,7 +63,9 @@ class RoleController extends GetxController {
           allRoles.assignAll(data);
           debugPrint('[Roles] Fetched ${data.length} platform roles');
         case Failure(:final error):
-          debugPrint('[Roles] Failed to fetch platform roles: ${error.message}');
+          debugPrint(
+            '[Roles] Failed to fetch platform roles: ${error.message}',
+          );
       }
     } catch (e) {
       debugPrint('[Roles] fetchAllRoles error: $e');
@@ -80,12 +82,18 @@ class RoleController extends GetxController {
     roles.assignAll(newRoles);
     if (newRoles.length == 1) {
       setSelectedRole(newRoles.first);
+    } else if (newRoles.isNotEmpty &&
+        !newRoles.any((role) => role.id == selectedRole.value?.id)) {
+      // Keep a valid active role until the user explicitly chooses another.
+      setSelectedRole(newRoles.first);
     }
+    update();
   }
 
   /// Sets [role] as the active role and persists its id, name, and scope to local storage.
   Future<void> setSelectedRole(RoleEntity role) async {
     selectedRole.value = role;
+    update();
     await Future.wait([
       _localStorage.setString(LocalStorageKeys.zoovanaRoleStorage, role.id),
       _localStorage.setString(LocalStorageKeys.zoovanaRoleName, role.name),
@@ -129,8 +137,12 @@ class RoleController extends GetxController {
     }
 
     // Roles list is empty (app restart) — rebuild from stored name + scope
-    final name = await _localStorage.getString(LocalStorageKeys.zoovanaRoleName);
-    final scope = await _localStorage.getString(LocalStorageKeys.zoovanaRoleScope);
+    final name = await _localStorage.getString(
+      LocalStorageKeys.zoovanaRoleName,
+    );
+    final scope = await _localStorage.getString(
+      LocalStorageKeys.zoovanaRoleScope,
+    );
     if (name != null && name.isNotEmpty) {
       selectedRole.value = RoleEntity(
         id: persistedId,

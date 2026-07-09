@@ -1,0 +1,896 @@
+# Zoovana CMS Screen-by-Screen Audit
+
+Audience: mobile developer rebuilding the CMS/admin/dashboard experience as a native or cross-platform app.
+
+Scope: `cms/` app only. The repository also contains a separate `marketplace/` app, but this audit focuses on the CMS codebase requested.
+
+Route prefix: all localized routes are under `/:locale`, where locale is `en` or `ar`.
+
+## Project Discovery
+
+**Tech stack**
+
+- Framework: Next.js 16 App Router, React 19, JavaScript/JSX.
+- Styling/UI: Tailwind CSS, shadcn/Radix primitives, lucide-react icons, framer-motion animations.
+- Routing/i18n: `next-intl`; pages live under `cms/src/app/[locale]`.
+- Auth: NextAuth route at `src/app/api/auth/[...nextauth]/route.js`; auth service calls `/api/v1/auth/*`.
+- Data fetching/state: TanStack React Query, SWR in places, axios clients, Zustand role store in `src/store/roleStore.js`.
+- Charts: Recharts.
+- API clients: `authClient`, `shopClient`, `shelterClient`, `petCareClient`, plus server/client axios wrappers.
+
+**Route and access model**
+
+- `/dashboard/*` is protected by `src/app/[locale]/dashboard/layout.jsx`.
+- Dashboard layout redirects unauthenticated users to `/:locale/login`.
+- Superusers are redirected from `/dashboard/*` to `/:locale/admin-panel`.
+- Unverified users are redirected to `/:locale/verify-email`.
+- Users with no roles are redirected to `/:locale/pending-approval`.
+- Role-specific pages then check their own role and redirect to a matching dashboard or home.
+- Admin panel pages are intended for superusers/admin operators. The admin layout itself is client-side and does not repeat the server guard; access is inferred from the superuser redirect and admin API usage.
+
+**Roles found**
+
+- `super_admin`
+- `shop_owner`
+- `shelter`
+- `volunteer`
+- `livestock_owner`
+- Pet owner family: `pet_owner`, `petowner`, `petcare`, `animalowner`, `marketplace_client`
+- Provider family: `provider`, `serviceprovider`
+- Sub-roles: `manager`, `employee`
+
+**Shared dashboard shell**
+
+- `DashboardLayout`: fixed desktop sidebar, mobile drawer sidebar, top bar with title/subtitle/user role, back button, locale switcher, and hamburger on mobile.
+- `Sidebar`: role menu items; desktop width 256px; mobile overlay drawer.
+- `RoleSwitcherSidebar`: fixed side rail shown only when user has 2+ known roles; switches between shop, shelter, livestock, volunteer, pet care, and provider dashboards.
+- `DataTable`: search, reset, CSV export, sort headers, client/server pagination, page-size selector, loading spinner, empty state, density toggle on desktop, optional selection/bulk actions.
+
+## Summary Table
+
+| Screen Name | Route | Roles with Access | Screen Type |
+|---|---|---|---|
+| Landing/Home | `/:locale` | Public | Landing |
+| Login | `/:locale/login` | Public | Auth Form |
+| Signup/Register | `/:locale/signup`, `/:locale/register` | Public | Auth Form |
+| Shop Owner Register | `/:locale/register/shopOwner` | Public | Auth Form |
+| Verify Email | `/:locale/verify-email` | Public/Unverified | Auth Form |
+| Forgot Password | `/:locale/forgot-password` | Public | Auth Form |
+| Reset Password | `/:locale/reset-password` | Public | Auth Form |
+| Pending Approval | `/:locale/pending-approval` | Authenticated no-role/pending | Status |
+| Profile | `/:locale/profile` | Authenticated | Profile/Settings |
+| Adopt | `/:locale/adopt` | Public/Auth | List/Detail Modal |
+| Adoption Contract | `/:locale/adoptions/:applicationId/contract` | Applicant/Shelter flow | Detail/Form |
+| Donate | `/:locale/donate` | Public/Auth | Form |
+| Lost & Found Public | `/:locale/lost-found` | Public/Auth | List/Form |
+| Provider Public Page | `/:locale/provider` | Provider route alias/Public entry | Dashboard/Entry |
+| Marketplace Redirect/Page | `/:locale/marketplace` | Public/Auth | Link/Page |
+| Dashboard Router | `/:locale/dashboard` | Authenticated roles | Redirect/Hub |
+| Shop Dashboard | `/:locale/dashboard/shop?view=dashboard` | Shop Owner | Dashboard |
+| Shop Branches | `/:locale/dashboard/shop?view=shops` | Shop Owner | List/CRUD Modals |
+| Shop Suppliers | `/:locale/dashboard/shop?view=suppliers` | Shop Owner | List/CRUD Modals |
+| Shop Categories | `/:locale/dashboard/shop?view=categories` | Shop Owner | List/CRUD Modals |
+| Shop Products | `/:locale/dashboard/shop?view=products` | Shop Owner | List/CRUD/Import Modals |
+| Shop Inventory | `/:locale/dashboard/shop?view=inventory` | Shop Owner | List/CRUD Modals |
+| Purchase Orders | `/:locale/dashboard/shop?view=purchaseOrders` | Shop Owner | List/Workflow Modals |
+| Marketplace Orders | `/:locale/dashboard/shop?view=mpOrders` | Shop Owner | List/Detail |
+| Marketplace Invoices | `/:locale/dashboard/shop?view=invoices` | Shop Owner | List/Detail Modal |
+| Developer API/Integrations | `/:locale/dashboard/shop?view=integrations` | Shop Owner | List/Modal |
+| Shop Settings | `/:locale/dashboard/shop/settings` | Shop Owner | Settings List |
+| Marketplace Activation | `/:locale/dashboard/shop/settings/marketplace-activation` | Shop Owner | Wizard |
+| Shelter Overview | `/:locale/dashboard/shelters` | Shelter Owner | Dashboard |
+| Shelter List | `/:locale/dashboard/shelters/list` | Shelter Owner | List/CRUD Modal |
+| Shelter Animals | `/:locale/dashboard/shelters/animals` | Shelter Owner | List/CRUD/Detail Modals |
+| Shelter Medical | `/:locale/dashboard/shelters/medical` | Shelter Owner | List/Form Modal |
+| Shelter Vaccinations | `/:locale/dashboard/shelters/vaccinations` | Shelter Owner | List/Form Modal |
+| Kennel Management | `/:locale/dashboard/shelters/kennel-managment` | Shelter Owner | List/Workflow Modals |
+| Shelter Adoptions | `/:locale/dashboard/shelters/adoptions` | Shelter Owner | List/Workflow Modals |
+| Shelter Volunteers | `/:locale/dashboard/shelters/volunteers` | Shelter Owner | List/Workflow Modals |
+| Shelter Donations | `/:locale/dashboard/shelters/donations` | Shelter Owner | List/Actions |
+| Shelter Lost & Found | `/:locale/dashboard/shelters/lost-found` | Shelter Owner | Tabs/List/Modals |
+| Animal Care | `/:locale/dashboard/shelters/animal-care` | Shelter Owner | Tabs/List/Forms |
+| Shelter Settings | `/:locale/dashboard/shelters/settings` | Shelter Owner | Settings Links |
+| Volunteer Dashboard | `/:locale/dashboard/volunteer` | Volunteer | Dashboard/Form |
+| Livestock Dashboard | `/:locale/dashboard/livestock` | Livestock Owner | Dashboard |
+| Pet Owner Overview | `/:locale/dashboard/pet-owner` | Pet Owner family | Dashboard |
+| Pet Owner Pets | `/:locale/dashboard/pet-owner/pets` | Pet Owner family | List/CRUD Modal |
+| Pet Owner Services | `/:locale/dashboard/pet-owner/services` | Pet Owner family | Search/List/Booking Modal |
+| Pet Owner Bookings | `/:locale/dashboard/pet-owner/bookings` | Pet Owner family | Tabs/List/Modals |
+| Pet Owner Messages | `/:locale/dashboard/pet-owner/messages` | Pet Owner family | Chat |
+| Pet Owner Medical | `/:locale/dashboard/pet-owner/medical` | Pet Owner family | Placeholder/Guarded |
+| Pet Owner Favorites | `/:locale/dashboard/pet-owner/favorites` | Pet Owner family | Placeholder/Guarded |
+| Pet Owner Reviews | `/:locale/dashboard/pet-owner/reviews` | Pet Owner family | Placeholder/Guarded |
+| Legacy Petcare | `/:locale/dashboard/petcare` | Pet Owner family | Redirect/Compatibility |
+| Provider Overview | `/:locale/dashboard/provider` | Provider family | Dashboard/Onboarding |
+| Provider Services | `/:locale/dashboard/provider/services` | Provider family | List/CRUD Modals |
+| Provider Bookings | `/:locale/dashboard/provider/bookings` | Provider family | Tabs/List/Actions |
+| Provider Messages | `/:locale/dashboard/provider/messages` | Provider family | Chat |
+| Provider Settings | `/:locale/dashboard/provider/settings` | Provider family | Guarded/Placeholder |
+| Admin Dashboard | `/:locale/admin-panel` | Super Admin | Dashboard |
+| Admin Users | `/:locale/admin-panel/user` | Super Admin | List/CRUD |
+| User Animal Management | `/:locale/admin-panel/userAnimalManagement` | Super Admin | Management |
+| Register Owner | `/:locale/admin-panel/registerOwner` | Super Admin | Form |
+| Create Role / RBAC | `/:locale/admin-panel/createRole` | Super Admin | RBAC CRUD |
+| Add Animal | `/:locale/admin-panel/addAnimal` | Super Admin | Form |
+| Analytics Dashboard | `/:locale/admin-panel/analyticsDashboard` | Super Admin | Analytics |
+| Subscriptions | `/:locale/admin-panel/subscriptions` | Super Admin | Tabs/CRUD |
+| Marketplace Approvals Overview | `/:locale/admin-panel/marketplace-approvals` | Super Admin | Dashboard |
+| Marketplace Product Approvals | `/:locale/admin-panel/marketplace-approvals/products` | Super Admin | List/Detail/Approve |
+| Marketplace Category Approvals | `/:locale/admin-panel/marketplace-approvals/categories` | Super Admin | List/Approve |
+| Provider Verification Overview | `/:locale/admin-panel/provider-verification` | Super Admin | Dashboard |
+| Provider Verification Pending | `/:locale/admin-panel/provider-verification/pending` | Super Admin | List/Review |
+| Provider Verification Approved | `/:locale/admin-panel/provider-verification/approved` | Super Admin | List/Detail |
+| Provider Verification Rejected | `/:locale/admin-panel/provider-verification/rejected` | Super Admin | List/Detail |
+| Provider Verification Audit Log | `/:locale/admin-panel/provider-verification/audit-log` | Super Admin | Audit Table |
+| Data Management Tenants | `/:locale/admin-panel/data-management/tenants` | Super Admin | List/CRUD |
+| Data Management Products | `/:locale/admin-panel/data-management/products` | Super Admin | List |
+| Data Management Categories | `/:locale/admin-panel/data-management/categories` | Super Admin | List |
+| Data Management Branches | `/:locale/admin-panel/data-management/branches` | Super Admin | List |
+| Animal Lookups Domains | `/:locale/admin-panel/animal-lookups/domains` | Super Admin | Lookup CRUD |
+| Animal Lookups Categories | `/:locale/admin-panel/animal-lookups/categories` | Super Admin | Lookup CRUD |
+| Animal Lookups Pet Types | `/:locale/admin-panel/animal-lookups/pet-types` | Super Admin | Lookup CRUD |
+| Animal Lookups Breeds | `/:locale/admin-panel/animal-lookups/breeds` | Super Admin | Lookup CRUD |
+
+## Public And Authentication Screens
+
+### Landing/Home
+
+- Route: `/:locale`
+- Roles: Public.
+- Purpose: Public Zoovana CMS/landing entry with sections for hero, services, adopt pet, shelter, join, offer, products, pricing, about, marquee.
+- Entry points: Root URL, logo links, dashboard back buttons.
+- Layout: Header, landing sections, footer, scroll/navigation dots in the landing component set.
+- Components/actions: Join/register calls to auth screens; adopt/donate/lost-found/provider/marketplace links.
+- Data: Mostly static localized messages and public display assets.
+- States: Normal responsive landing, image fallback components.
+- Mobile notes: Keep as a public marketing/home shell; mobile app may replace with an authenticated role picker and only expose public web flows through webviews/deep links.
+
+### Auth Screens
+
+- Routes: `/:locale/login`, `/:locale/signup`, `/:locale/register`, `/:locale/register/shopOwner`, `/:locale/verify-email`, `/:locale/forgot-password`, `/:locale/reset-password`, `/:locale/pending-approval`.
+- Roles: Public, unverified, or authenticated pending user depending on screen.
+- Purpose: Account access, registration, password recovery, email OTP verification, pending role/approval status.
+- Entry points: Header links, protected-route redirects, login errors, password reset emails.
+- Layout: Auth layout, language switcher, card-like forms.
+- Inputs:
+  - Login: email, password, social login; may trigger role selection for social login when backend returns `requires_role_selection`.
+  - Register/signup: email, full name, password, phone number, selected role IDs; validation via Zod in `lib/validations/auth/*`.
+  - Verify email: OTP input, email query parameter, resend action.
+  - Forgot/reset: email, OTP/new password/reset token flow.
+  - Pending approval: status details and role display from session.
+- Actions: submit credentials, register, verify OTP, resend OTP, request password reset, reset password, refresh session token.
+- Data/API: `api/services/auth.js` calling `/api/v1/auth/register`, `/verify-email`, `/resend-verification`, `/forgot-password`, `/verify-otp`, `/reset-password`, `/change-password`, `/me/roles`; public roles from `/api/v1/roles`.
+- States: Loading buttons, server errors, role-selection modal/state, pending approval, verified redirect.
+- Mobile notes: OTP should use native one-time-code input; social role picker should be a bottom sheet; preserve RTL support.
+
+### Profile
+
+- Route: `/:locale/profile`
+- Roles: Authenticated.
+- Purpose: User profile/business info hub; also used by livestock quick actions through query tabs such as `?tab=animals`, `?tab=health`, `?tab=schedule`, `?tab=business`.
+- Entry points: Top bar/user menu, livestock dashboard quick actions, shelter/shop settings links.
+- Layout: Profile client component with likely sidebar/tabs.
+- Data/API: current user profile from `users.js` `/api/v1/users/me/profile`; business info from `business.js`.
+- Actions: update profile/business data, possibly change password through auth components.
+- Mobile notes: Convert tabbed/side profile layout to stacked tabs or segmented control.
+
+### Adopt
+
+- Route: `/:locale/adopt`
+- Roles: Public/authenticated.
+- Purpose: Browse animals available for adoption and submit adoption interest/application.
+- Entry points: Landing sections, shelter flow, public nav.
+- Layout: `AdoptPageClient`, animal cards, skeletons, detail/application interactions.
+- Data/API: shelter service animal/adoption APIs; public shelter base URL.
+- Components/actions: animal list cards, filters/search as implemented in client, adoption application creation, contract route after approval.
+- States: `AnimalSkeleton`, empty/no animals, loading/error.
+- Mobile notes: Use card list and filter sheet; avoid desktop grid density.
+
+### Adoption Contract
+
+- Route: `/:locale/adoptions/:applicationId/contract`
+- Roles: Adoption applicant and/or shelter flow.
+- Purpose: Review adoption contract and agree/sign.
+- Entry points: Shelter adoption workflow, applicant link/deep link.
+- Layout: `ContractReviewClient`, contract details, agreement action.
+- Data/API: `adoptions.js` `/api/v1/adoptions/:applicationId/contract`, `/contract/agree`.
+- Actions: review terms, submit agreement.
+- Mobile notes: Long legal content needs sticky accept footer and clear scroll completion affordance.
+
+### Donate
+
+- Route: `/:locale/donate`
+- Roles: Public/authenticated.
+- Purpose: Donation form and public giving flow.
+- Data/API: shelter donation service `/api/v1/donations`.
+- Mobile notes: Use native amount selector, payment handoff, receipt state.
+
+### Lost & Found Public
+
+- Route: `/:locale/lost-found`
+- Roles: Public/authenticated.
+- Purpose: Report lost/found animals publicly and view lost/found content.
+- Layout: `LostFoundPageClient`, `LostFoundForm`.
+- Data/API: `lostFound.js` public endpoints `/api/v1/lost-found/public/lost`, `/public/found`.
+- Actions: submit lost report, submit found report, view report cards.
+- Mobile notes: Location/photo capture is a natural native feature; use map picker and camera upload.
+
+## Shop Owner Screens
+
+Shared access: `shop_owner`. The root page `/:locale/dashboard/shop` denies non-shop users and redirects shelter/volunteer users to their dashboards.
+
+Shared layout: desktop sidebar/mobile drawer with menu: Overview, Shops, Suppliers, Categories, Products, Inventory, Purchase Orders, Marketplace Orders, Marketplace Invoices, Developer API. Most screens preserve `selectedShopId` in localStorage and pass selected branch/shop to child components.
+
+### Shop Dashboard Overview
+
+- Route: `/:locale/dashboard/shop?view=dashboard`
+- Purpose: Business performance overview.
+- Entry points: role switcher, `/dashboard/shop`, sidebar Overview.
+- Layout: stat-card grid, two charts, recent marketplace orders table.
+- Components:
+  - Stat cards: total revenue, total orders, active shops/branches, low stock.
+  - Charts: revenue trend line chart, sales by category pie chart.
+  - Recent orders table columns: order number, items, total, fulfillment status, date, action view.
+  - Button: View All navigates to `view=mpOrders`.
+- Data/API: `useShopDashboardOverview` from shops service; `useMarketplaceOrders` from `mpOrders.js` `/api/v1/mp-orders`.
+- States: server-status error block for shop loading errors; chart loading text; no data available.
+- Conditional logic: defaults to first branch if no selected branch; status badge colors by order state.
+- Mobile notes: Convert charts to horizontally scrollable or compact cards; recent orders should be card rows instead of wide table.
+
+### Branches/Shops
+
+- Route: `/:locale/dashboard/shop?view=shops`
+- Purpose: Manage shop branches.
+- Components: `ShopList`, `CreateShopModal`, `UpdateShopModal`, `DeleteShopModal`.
+- Data/API: `shops.js` `/api/v1/branches`, `/branches/:id`, dashboard overview endpoint.
+- Actions: create branch, edit branch, delete branch, select branch.
+- Forms: branch modal captures branch/business details, localized names, contact/location fields, active/settings fields as provided by backend.
+- States: success toast/message, loading table, server status errors.
+- Mobile notes: Use branch cards with primary branch selector; create/edit as full-screen form.
+
+### Suppliers
+
+- Route: `/:locale/dashboard/shop?view=suppliers`
+- Purpose: Manage suppliers for selected branch.
+- Components: `SupplierList`, `CreateSupplierModal`, `UpdateSupplierModal`, `DeleteSupplierModal`.
+- Data/API: `suppliers.js` `/api/v1/:branchId/suppliers`, `/api/v1/suppliers/:supplierId`.
+- Actions: add supplier, edit, delete.
+- Forms: supplier name/contact fields, phone/email/address/business metadata.
+- States: branch-required error when no shop exists, success message, empty table.
+- Mobile notes: Make branch selector sticky; supplier details should be a bottom sheet/card.
+
+### Categories
+
+- Route: `/:locale/dashboard/shop?view=categories`
+- Purpose: Manage product categories per branch and submit/publish categories.
+- Components: `CategoryList`, `CreateCategoryModal`, `UpdateCategoryModal`, `DeleteCategoryModal`, `PublishCategoryModal`.
+- Data/API: `categories.js` `/api/v1/products/categories/:branchId`, parent options, category detail/update/delete; marketplace category submission in `marketplace.js`.
+- Actions: create, edit, delete, publish/submit to marketplace.
+- Forms: localized name/description, parent category, image/status fields.
+- Conditional logic: requires selected branch; parent options filtered by branch.
+- Mobile notes: Hierarchical categories need nested list or breadcrumb, not a wide table.
+
+### Products
+
+- Route: `/:locale/dashboard/shop?view=products`
+- Purpose: Manage branch products and variants, import products, publish to marketplace.
+- Components: `ProductList`, `CreateProductModal`, `UpdateProductModal`, `DeleteProductModal`, `ProductVariantsModal`, `PublishProductModal`, `ExcelImportModal`, `GoogleSheetImportModal`.
+- Data/API: `products.js` `/api/v1/products/:branchId`, `/api/v1/products/item/:productId`, `/api/v1/products/:branchId/import-excel`, `/api/v1/products/import/google-sheet`; `productVariants.js`; marketplace product submission.
+- Actions: create/edit/delete product, manage variants, import Excel/Google Sheet, submit product to marketplace.
+- Forms:
+  - Product: localized names/descriptions, category, supplier, product type, SKU prefix, images/files.
+  - Variant: name/SKU/price/compare price/default variant and stock-related fields.
+  - Imports: file upload or Google Sheet URL/config.
+- States: import progress/errors, empty product list, product publish status.
+- Mobile notes: Split product creation into steps: basics, media, category/supplier, variants; use native file picker/camera.
+
+### Inventory
+
+- Route: `/:locale/dashboard/shop?view=inventory`
+- Purpose: Track and adjust stock.
+- Components: `InventoryView`, `StockList`, `CreateStockModal`, `UpdateStockModal`, `DeleteStockModal`.
+- Data/API: `inventoryStock.js` `/api/v1/inventory/stock`, `/stock/:id`, `/adjust`, `/bulk-adjust`.
+- Actions: create stock record, update stock, delete, adjust quantity, bulk adjust.
+- Forms: branch, product variant, quantity, low-stock threshold, adjustment reason.
+- Conditional logic: low stock count feeds overview.
+- Mobile notes: Barcode/SKU scanning could improve native UX; use large quantity steppers.
+
+### Purchase Orders
+
+- Route: `/:locale/dashboard/shop?view=purchaseOrders`
+- Purpose: Manage supplier purchase orders and receiving.
+- Components: `PurchaseOrderList`, `CreatePurchaseOrderModal`, `UpdatePurchaseOrderModal`, `ReceiveGoodsModal`, `DeletePurchaseOrderModal`.
+- Data/API: `purchaseOrders.js` branch purchase orders, create/update/delete, submit, confirm, cancel, receive, close.
+- Actions: create PO, edit, submit, confirm, cancel, receive goods, close.
+- Forms: branch, supplier, item rows with variant, quantity, unit price, tax rate.
+- Conditional logic: workflow actions depend on PO status.
+- Mobile notes: Item rows should be a repeatable line-item editor screen; receiving should support per-line received quantity.
+
+### Marketplace Orders
+
+- Route: `/:locale/dashboard/shop?view=mpOrders`
+- Purpose: Fulfill marketplace sub-orders.
+- Components: `MarketplaceOrderList`.
+- Data/API: `mpOrders.js` `/api/v1/mp-orders`, branch-filtered URL, detail by sub-order ID/number, fulfillment patch, cancel.
+- Actions: view detail, update fulfillment status, cancel order with reason.
+- Data displayed: order number, item count, totals/currency, fulfillment status, created date, customer/order details in detail view.
+- Mobile notes: Replace table with status-grouped order cards; fulfillment actions should be prominent.
+
+### Marketplace Invoices
+
+- Route: `/:locale/dashboard/shop?view=invoices`
+- Purpose: View invoices from marketplace orders.
+- Components: `MarketplaceInvoiceList`, `InvoiceDetailsModal`.
+- Data/API: `mpInvoices.js` `/api/v1/mp-invoices`, `/mp-invoices/:invoiceId`, `/sub-order/:subOrderId`.
+- Actions: view invoice detail.
+- Mobile notes: Invoice detail should be share/download capable; avoid tiny tabular line items.
+
+### Developer API / Integrations
+
+- Route: `/:locale/dashboard/shop?view=integrations`
+- Purpose: Manage seller API integrations.
+- Components: `IntegrationList`, `CreateIntegrationModal`, `CredentialsModal`, `RegenerateSecretModal`, `ApiDocsModal`.
+- Data/API: `integrations.js` `/api/v1/seller/integrations`, regenerate secret, revoke, activate.
+- Actions: create integration, view credentials, regenerate secret, revoke/activate, view API docs.
+- Conditional logic: secret display is modal-gated; status changes alter available actions.
+- Mobile notes: Credentials need secure reveal/copy behavior and biometric confirmation if native.
+
+### Shop Settings
+
+- Route: `/:locale/dashboard/shop/settings`
+- Purpose: Settings hub.
+- Entry points: direct URL/settings quick action.
+- Items: Marketplace Activation, Verification, Payments, Notifications, Team. Only Marketplace Activation has an implemented route in this code snapshot.
+- Mobile notes: Treat unimplemented entries as disabled or coming soon.
+
+### Marketplace Activation Wizard
+
+- Route: `/:locale/dashboard/shop/settings/marketplace-activation`
+- Purpose: Activate shop integration with marketplace.
+- Layout: 3-step wizard: Review Benefits, Generate API Key, Activate.
+- Data/API: `marketplace.js` `/api/v1/marketplace/status`, `/generate-api-key`, `/activate`, `/deactivate`.
+- Actions: generate API key, activate/deactivate marketplace.
+- Mobile notes: Use stepper with secure key reveal/copy and confirmation screen.
+
+## Shelter Owner Screens
+
+Shared access: `shelter`. Non-shelter users are redirected away. Shared menu: Overview, Shelters, Animals, Medical, Vaccinations, Kennel Management, Adoptions, Volunteers, Donations, Lost & Found, Animal Care. Menus for medical, vaccinations, adoptions, volunteers, donations, lost/found are hidden/redirected when shelter service flags are disabled.
+
+### Shelter Overview
+
+- Route: `/:locale/dashboard/shelters` and `/:locale/dashboard/shelters/overview`
+- Purpose: Shelter operations dashboard.
+- Layout: stats cards, intake trend line chart, animals-by-status pie chart, financial overview cards.
+- Data/API: `shelters.js` `/api/v1/dashboard/overview`, `/api/v1/financials/dashboard`.
+- Data displayed: total animals, available animals, treatments needed, monthly intake, vaccinations due, donations, adoption fees, net income.
+- States: spinner for overview/financial loading, no chart data states.
+- Mobile notes: Five stat cards should become two-column/vertical cards; charts need accessible numeric summaries.
+
+### Shelter List
+
+- Route: `/:locale/dashboard/shelters/list`
+- Purpose: Manage shelter profiles/locations.
+- Components: `ShelterList`, `CreateShelterModal`.
+- Data/API: `shelters.js` `/api/v1/shelters`, `/shelters/:id`.
+- Actions: create, update, delete, choose active shelter.
+- Forms: shelter name, contact, location, service flags such as medical, adoption, vaccination, volunteer acceptance, donations, lost/found.
+- Mobile notes: Service flags should be toggles with clear labels; location should use native map picker.
+
+### Animals
+
+- Route: `/:locale/dashboard/shelters/animals`
+- Purpose: Manage shelter animals.
+- Components: `AnimalList`, `CreateAnimalModal`, `AnimalDetailsModal`, `AnimalHealthModal`.
+- Data/API: `animals.js` `/api/v1/animals`, `/animals/:id`, `/animals/:id/health`; lookup APIs for domains/categories/pet types/breeds.
+- Actions: create, view details, edit, delete, open health modal.
+- Forms: shelter, domain, category, pet type, breed, animal identity/profile fields, status, health fields, media.
+- Data displayed: animal name/code/type/breed/status/health/adoption availability.
+- Mobile notes: Use animal profile cards with photo, status chips, and bottom-sheet actions.
+
+### Medical Records
+
+- Route: `/:locale/dashboard/shelters/medical`
+- Purpose: Track medical records for animals.
+- Components: `MedicalRecordsList`.
+- Data/API: `medicalRecords.js` `/api/v1/medical-records`, `/animals/:animalId/medical-history`.
+- Actions: create, edit, delete medical record; filter by shelter/animal.
+- Forms: animal, date, diagnosis/treatment/notes, provider/vet, attachments as supported.
+- Conditional logic: disabled state if medical service flag off.
+- Mobile notes: Timeline per animal is better than a broad table.
+
+### Vaccinations
+
+- Route: `/:locale/dashboard/shelters/vaccinations`
+- Purpose: Manage vaccination records and schedules.
+- Components: `VaccinationsList`.
+- Data/API: `vaccinations.js`, `vaccinationSchedules.js`.
+- Actions: create/update/delete vaccination record, create/update/delete schedule.
+- Forms: animal, vaccine, date, due date/schedule, notes/status.
+- Conditional logic: disabled state if vaccination service flag off.
+- Mobile notes: Calendar/timeline view; due-soon push notifications are a native opportunity.
+
+### Kennel Management
+
+- Route: `/:locale/dashboard/shelters/kennel-managment` (note misspelling in route)
+- Purpose: Manage kennels, assignments, cleaning, checkout.
+- Components: `KennelManagementTab`, `KennelFormModal`, `KennelDetailsModal`, `AssignAnimalModal`, `CheckoutAnimalModal`, `CleaningLogModal`, `AnimalHistoryModal`.
+- Data/API: `kennels.js`, `kennelAssignments.js`, `cleaningLogs.js`.
+- Actions: create/edit/delete kennel, assign animal, bulk assign, checkout, bulk checkout, add cleaning log, view animal history/capacity summary.
+- Forms: kennel details/capacity/status, assignment animal/kennel, checkout reason/date, cleaning details.
+- Mobile notes: Kennel grid is desktop-specific; native app should use facility map/list toggle and occupancy cards.
+
+### Adoptions
+
+- Route: `/:locale/dashboard/shelters/adoptions`
+- Purpose: Manage adoption applications and events.
+- Components: `AdoptionApplicationsTab`, `AdoptionDetailsModal`, `CreateAdoptionModal`, `ScheduleEventModal`, `EventOutcomeModal`, `RejectionReasonModal`, `ContractDetailsModal`.
+- Data/API: `adoptions.js` applications, status patch, events, event outcome, contracts.
+- Actions: create application, view details, approve/reject/status update, schedule event, record event outcome, view contract.
+- Forms: animal/applicant data, rejection reason, event schedule, event outcome.
+- Conditional logic: buttons depend on application status and adoption service flag.
+- Mobile notes: Workflow should be a status timeline with primary next action.
+
+### Volunteers
+
+- Route: `/:locale/dashboard/shelters/volunteers`
+- Purpose: Manage volunteer applications and shifts.
+- Components: `VolunteersTab`, `VolunteerDetailsModal`, `CreateShiftModal`.
+- Data/API: `volunteers.js` `/api/v1/volunteers`, approve/reject, shifts.
+- Actions: approve/reject volunteer, view details, create shifts.
+- Forms: shift shelter/user/date/start/end/role/notes.
+- Conditional logic: disabled if volunteer acceptance flag off.
+- Mobile notes: Shift creation should use date/time pickers; volunteer details need contact actions.
+
+### Donations
+
+- Route: `/:locale/dashboard/shelters/donations`
+- Purpose: Manage donations and receipts.
+- Components: `DonationsTab`.
+- Data/API: `donations.js` list/create/confirm/reject/send receipt.
+- Actions: confirm donation, reject donation, send receipt.
+- Data displayed: donor, amount, status, date, shelter.
+- Conditional logic: disabled if donations flag off.
+- Mobile notes: Donation cards with quick status actions; receipt send confirmation.
+
+### Lost & Found Management
+
+- Route: `/:locale/dashboard/shelters/lost-found`
+- Purpose: Manage lost, found, emergency reports and matching.
+- Components: `LostFoundManagementTab`, `LostReportsList`, `FoundReportsList`, `EmergencyReportsList`, `ReportDetailsModal`, `MatchesModal`.
+- Data/API: `lostFound.js` lost/found CRUD, status patch, link, reunite, transfer to intake, matches endpoints.
+- Actions: view report, update/delete/status, link lost/found match, reunite, transfer found animal to intake.
+- Conditional logic: disabled if lost-and-found service flag off.
+- Mobile notes: Map-first view and photo comparison are important; report detail should have call/message/location actions.
+
+### Animal Care
+
+- Route: `/:locale/dashboard/shelters/animal-care`
+- Purpose: Manage feeding schedules, diet plans, care logs.
+- Components: `AnimalCareTab`, `FeedingSchedulesList`, `DietPlansList`, `CareLogsList`.
+- Data/API: `animalCare.js` feeding schedules, diet plans, care logs, toggle/complete/missed.
+- Actions: create/update/delete schedule or diet, toggle active, create care log, mark complete/missed.
+- Mobile notes: Daily task/checklist UX is better than tables; offline check-in may be useful.
+
+### Shelter Settings
+
+- Route: `/:locale/dashboard/shelters/settings`
+- Purpose: Settings links.
+- Items: Profile (`/profile?tab=business`), Intake, Adoption, Notifications, Team. Only settings hub exists in listed pages.
+- Mobile notes: Treat non-routed settings as future/disabled unless implemented elsewhere.
+
+## Volunteer Screens
+
+### Volunteer Dashboard
+
+- Route: `/:locale/dashboard/volunteer`
+- Roles: `volunteer`.
+- Purpose: Volunteer shift management and application flow.
+- Entry points: role switcher, dashboard redirect, sidebar.
+- Layout: Dashboard shell with tabs: My Shifts and Apply. Apply tab only appears when user is not approved and not pending.
+- Data/API: `volunteers.js` `/api/v1/volunteers/me/shifts`, sign-in, sign-out, `/me/applications`, public shelter list.
+- My Shifts components:
+  - Summary stats: total hours, completed shifts.
+  - Sections: today, upcoming, past shifts.
+  - Shift card: role, status, date, time, notes, hours worked.
+  - Buttons: Sign In, Sign Out.
+- Conditional logic:
+  - Sign in is allowed only on shift date from 15 minutes before start until end.
+  - Sign out is allowed after sign-in until 30 minutes after shift end.
+  - Auto sign-out checks every 30 seconds after grace period.
+  - Pending/approved/rejected application states replace normal shift/apply content.
+- Apply flow:
+  - Step 1 shelter picker: search public shelters, page through list, select shelter; shelters not accepting volunteers are blocked.
+  - Step 2 form: skill chips (`dog_walking`, `cleaning`, `admin`, `events`, `feeding`, `front_desk`, `grooming`, `training`), availability checkboxes weekdays/weekends, emergency contact name, emergency contact phone, notes.
+  - Validation: at least one skill, at least one availability option, emergency name required and letters only, Saudi phone required/valid, notes max 250, name max 50.
+- States: loading spinner, success alert, error alert, pending approval screen, rejected screen, empty shifts.
+- Mobile notes: Shift cards are already mobile-friendly; use native time window notifications and geofenced/check-in if backend supports it.
+
+## Livestock Owner Screens
+
+### Livestock Dashboard
+
+- Route: `/:locale/dashboard/livestock`
+- Roles: `livestock_owner`.
+- Purpose: Lightweight dashboard for livestock owners.
+- Layout: top header with home button, stats cards, quick action cards, welcome/get-started callout.
+- Stats: total animals, healthy, needs attention; currently static zeros.
+- Quick actions: My Animals -> `/:locale/profile?tab=animals`; Health Records -> profile health tab; Schedule -> profile schedule tab; Marketplace -> marketplace.
+- Data/API: none in dashboard component.
+- Mobile notes: This is already card-first; route profile tabs to native sub-screens.
+
+## Pet Owner Screens
+
+Shared access: `pet_owner`, `petowner`, `petcare`, `animalowner`, `marketplace_client`. Legacy `/dashboard/petcare` routes pet owner family to pet owner dashboard.
+
+### Pet Owner Overview
+
+- Route: `/:locale/dashboard/pet-owner`
+- Purpose: Pet care overview.
+- Layout: stat cards, booking activity chart, services used pie chart, My Pets preview, Quick Actions.
+- Data/API: `pets.js` `/api/v1/pets`; `bookings.js` `/api/v1/bookings/my`; `chats.js` unread count.
+- Data displayed: registered pet count, pending/upcoming bookings count, unread messages count, preview of up to three pets.
+- Actions: Add Pet navigates to Pets screen; Find Services; Book Service; Pet Insurance card is coming soon.
+- States: pet preview skeletons, no pets empty state; charts currently use placeholder zero data.
+- Mobile notes: Preserve quick action prominence; charts can be secondary or replaced with simple activity summaries.
+
+### My Pets
+
+- Route: `/:locale/dashboard/pet-owner/pets`
+- Purpose: Manage pet profiles.
+- Components: `MyPetsTab`, `PetFormModal`.
+- Data/API: `pets.js` create/list/detail/update/delete.
+- Actions: add pet, edit pet, delete pet.
+- Forms: pet name, species, breed, age, vaccination/health fields, photos as supported.
+- States: loading, empty no pets, form modal errors.
+- Mobile notes: Use native photo picker and full-screen pet form.
+
+### Find Services
+
+- Route: `/:locale/dashboard/pet-owner/services`
+- Purpose: Search pet-care providers/services and request bookings.
+- Components: `FindServicesTab`, `BookingRequestModal`, service/provider cards.
+- Data/API: `providers.js` `/api/v1/search/providers`; `bookings.js` `/api/v1/bookings/request`; pets for pet selection.
+- Actions: search/filter providers, view service/provider info, request booking.
+- Forms: booking request includes selected service, pet, date/time, notes and service-specific fields.
+- States: loading provider cards, empty search results, booking modal submission errors.
+- Mobile notes: Filters should be bottom sheet; provider cards should expose call/chat/book actions.
+
+### Bookings
+
+- Route: `/:locale/dashboard/pet-owner/bookings`
+- Purpose: Track booking requests and history.
+- Components: `BookingsTab`, `PaymentModal`, `ReviewBookingModal`.
+- Data/API: `bookings.js` `/api/v1/bookings/my`; `payments.js` create payment intent; `reviews.js` booking reviews.
+- Tabs: created, pending, confirmed, rejected, completed, cancelled.
+- Actions: pay for booking, review completed booking, open related chat/details.
+- Conditional logic: payment/review actions depend on booking status.
+- Mobile notes: Use segmented status tabs and booking cards; payment should use native/web payment flow.
+
+### Messages
+
+- Route: `/:locale/dashboard/pet-owner/messages`
+- Purpose: Chat with providers.
+- Components: `ChatTab`.
+- Data/API: `chats.js` direct thread, my chats, thread messages, unread counts, mark read; socket hook.
+- Layout: thread list and active chat on desktop.
+- Actions: select thread, send message, mark read.
+- States: empty thread list, loading messages, optimistic outgoing messages, duplicate-message guard.
+- Mobile notes: Split thread list and conversation into separate screens.
+
+### Pet Owner Medical, Favorites, Reviews
+
+- Routes: `/:locale/dashboard/pet-owner/medical`, `/favorites`, `/reviews`
+- Purpose: Guarded routes exist, but primary implemented pet-owner dashboard menu does not include them in this snapshot.
+- Mobile notes: Treat as future modules unless product confirms active requirements.
+
+## Provider Screens
+
+Shared access: `provider`, `serviceprovider`. Provider dashboard fetches provider profile before showing main UI.
+
+### Provider Onboarding / Status
+
+- Route: `/:locale/dashboard/provider` when no approved profile, plus provider route alias.
+- Purpose: Apply as service provider and show verification status.
+- Components: `ProviderOnboarding`.
+- Data/API: `providers.js` `/api/v1/provider-profiles/apply`, `/me`, update profile.
+- Onboarding steps: Welcome, Identity, Business, Property, Review.
+- Status states:
+  - No profile: onboarding wizard.
+  - `pending_review`: under review card with back button.
+  - `rejected`: rejection reason card and update/back buttons.
+  - Approved: main provider dashboard.
+- Mobile notes: Onboarding should be a native stepper with document/image upload and progress preservation.
+
+### Provider Overview
+
+- Route: `/:locale/dashboard/provider`
+- Purpose: Provider performance dashboard.
+- Layout: stat cards, earnings trend chart, services performance pie chart, active services preview, quick actions.
+- Data/API: `providers.js` `/api/v1/provider/overview/dashboard`, `/api/v1/provider/services`, provider profile.
+- Data displayed: monthly revenue, total bookings, profile rating, response rate, completed jobs, active services.
+- Actions: Manage services, quick actions for schedule/payouts/messages/settings (some are not wired).
+- States: profile loading pulse, dashboard skeleton cards, no services.
+- Mobile notes: Quick actions should route; active services preview can be horizontal cards.
+
+### Provider Services
+
+- Route: `/:locale/dashboard/provider/services`
+- Purpose: Manage service listings and availability.
+- Components: `ServicesTab`, `ServiceListingModal`, `ViewServiceModal`, `AvailabilityModal`, delete confirmation.
+- Data/API: `providers.js` provider services list/detail/create/update/delete; availability block/recurring.
+- Table columns: service name/photo/description, type chips, price/unit, rating/review count, active/offline status.
+- Actions: add service, edit service, view details, manage availability, delete.
+- Service form fields: service type (`boarding`, `daycare`, `grooming`, `walking`), title/description, price, price unit (`hour`, `day`, `night`, `session`), property type (`house`, `apartment`), accepted pet sizes (`small`, `medium`, `large`), photos and availability fields.
+- Availability modal: one-time block and recurring availability using day-of-week options Monday-Sunday.
+- States: loading cards, empty no services with create-first button, server-side pagination/search.
+- Mobile notes: Replace table with service cards; availability should be calendar/weekly schedule UI.
+
+### Provider Bookings
+
+- Route: `/:locale/dashboard/provider/bookings`
+- Purpose: Accept/decline/complete provider bookings.
+- Components: `ProviderBookingsTab`, `PetMedicalModal`.
+- Data/API: `bookings.js` `/api/v1/provider/bookings`, accept, decline, complete.
+- Tabs: pending requests, confirmed, completed/past.
+- Decline reasons: fully booked, out of town, schedule conflict, pet not compatible, other.
+- Actions: accept, decline with reason, complete booking, view pet medical info.
+- Mobile notes: Status tabs and swipe/card actions; decline reason as bottom sheet.
+
+### Provider Messages
+
+- Route: `/:locale/dashboard/provider/messages`
+- Purpose: Provider chat.
+- Components/API: same `ChatTab` and `chats.js` as pet owner.
+- Mobile notes: Separate inbox and conversation screens.
+
+### Provider Settings
+
+- Route: `/:locale/dashboard/provider/settings`
+- Purpose: Guarded provider route exists; primary menu does not include it in this snapshot.
+- Mobile notes: Treat as future profile/settings module unless product confirms.
+
+## Super Admin Screens
+
+Shared access: `super_admin` / superuser. Admin layout top contains NotificationCenter, language switch, and Quick Access dropdown with Dashboard, Marketplace Approvals, Provider Verification, Animal Lookups. Subscriptions is present in code but commented out from quick access.
+
+### Admin Dashboard
+
+- Route: `/:locale/admin-panel`
+- Purpose: Admin landing/community overview.
+- Layout: admin header, community stats, service cards, Murshid guide, help center.
+- Data: mostly static values in component (`1,247` users, `3,542` animals, etc.).
+- Actions: service cards call `goToSlide` if embedded; quick access navigates admin sections.
+- Mobile notes: This is more landing-style than operational; native admin app may replace with real metrics.
+
+### Notification Center
+
+- Appears in admin header.
+- Data/API: `notifications.js` `/api/v1/notification/list`, read, read-all, send-test.
+- Actions: view notifications, mark read/all read, send test.
+- Mobile notes: Integrate with native push notification center.
+
+### Admin Users
+
+- Route: `/:locale/admin-panel/user`
+- Purpose: Manage users.
+- Data/API: `users.js` `/api/v1/users`, `/users/:id`; roles displayed from user records.
+- Actions: list, view/edit user, delete user as implemented.
+- Data displayed: user identity/contact/roles/status.
+- Mobile notes: Use searchable user list and detail/edit screen.
+
+### Register Owner
+
+- Route: `/:locale/admin-panel/registerOwner`
+- Purpose: Admin-created owner registration.
+- Likely data/API: auth/register and role assignment endpoints.
+- Mobile notes: Full-screen form with role selector.
+
+### Create Role / RBAC
+
+- Route: `/:locale/admin-panel/createRole`
+- Purpose: Manage roles and permissions.
+- Components: `RolesList`, permission management components.
+- Data/API: admin roles/hooks: roles, permissions, modules, role-permissions; `/api/v1/roles/:id/permissions`.
+- Layout: role list panel, selected-role permissions/details, stats cards.
+- Actions: select role, edit non-system role, delete non-system role, assign permissions.
+- Conditional logic: system roles hide edit/delete; selected role changes permission panel.
+- Mobile notes: Use two-step navigation: roles list -> role detail/permissions.
+
+### Subscriptions
+
+- Route: `/:locale/admin-panel/subscriptions`
+- Purpose: Manage subscription plans/features.
+- Components: `PlansTab`, `FeaturesTab`, `PlanFeaturesModal`.
+- Data/API: `admin/subscriptions.js` plans, features, plan features create/update/delete.
+- Actions: create/update/delete plan, create/update/delete feature, attach/detach features to plan.
+- Mobile notes: Feature assignment should be checklist screen.
+
+### Marketplace Approvals Overview
+
+- Route: `/:locale/admin-panel/marketplace-approvals`
+- Purpose: Review pending marketplace submissions.
+- Layout: total pending card, product approvals navigation card, empty all-caught-up state.
+- Data/API: `admin/marketplaceApprovals.js`, pending counts.
+- Actions: navigate to products/categories.
+- Mobile notes: Dashboard card should deep-link directly into filtered queues.
+
+### Marketplace Product Approvals
+
+- Route: `/:locale/admin-panel/marketplace-approvals/products`
+- Purpose: Approve/reject submitted products.
+- Layout: total products stat, selectable product list, pagination, reject modal, product detail modal.
+- List fields: product name, product type, business, category, submitted date.
+- Actions: view details, approve, reject, bulk approve selected products.
+- Reject modal: required rejection reason textarea; cancel/confirm.
+- Detail modal fields: product name, type, SKU prefix, status, description, business, branch ID, category, marketplace submitted/approval status/submitted at/submitted by/rejection reason, variants with name/SKU/price/compare price/default flag.
+- Data/API: approve/reject/bulk approve/product details from `admin/marketplaceApprovals.js`.
+- States: loading spinner, no pending products empty state, processing disabled buttons, pagination.
+- Mobile notes: Bulk select needs explicit selection mode; product detail should be a full screen.
+
+### Marketplace Category Approvals
+
+- Route: `/:locale/admin-panel/marketplace-approvals/categories`
+- Purpose: Approve/reject category submissions.
+- Data/API: `admin/marketplaceApprovals.js` category endpoints.
+- Expected UI: similar approval queue with localized category details and actions.
+- Mobile notes: Same queue/detail pattern as products.
+
+### Provider Verification Overview
+
+- Route: `/:locale/admin-panel/provider-verification`
+- Purpose: Verification dashboard for service providers.
+- Layout: pending total hero card, cards for Pending, Approved, Rejected, Audit Log, helper card.
+- Data/API: `admin/providerProfiles.js` list filtered by verification status.
+- Actions: navigate status queues and audit log.
+- States: loading spinners in counts.
+- Mobile notes: Use status cards and badge counts.
+
+### Provider Verification Queues
+
+- Routes: `/pending`, `/approved`, `/rejected`
+- Purpose: Review provider profiles by verification status.
+- Components: `ProviderTable`, `ProviderReviewModal`.
+- Table columns: provider ID, experience years, hourly rate, submitted date.
+- Actions:
+  - View details for all statuses.
+  - Approve/reject only when `verification_status === pending_review`.
+  - Background check endpoint available in service module.
+- Review modal: shows profile detail and collects review decision/rejection reason as applicable.
+- Data/API: `admin/providerProfiles.js` list/detail/background-check/review.
+- States: table loading spinner, empty status queue.
+- Mobile notes: Profile review needs full-screen document/image review, sticky approve/reject action bar.
+
+### Provider Verification Audit Log
+
+- Route: `/:locale/admin-panel/provider-verification/audit-log`
+- Purpose: Audit review actions for provider profiles.
+- Components: `AuditLogTable`.
+- Data/API: `/api/v1/admin/provider-profiles/:profileId/audit-logs` or list as wired by page.
+- Mobile notes: Use chronological log list with filters.
+
+### Data Management
+
+- Routes: `/:locale/admin-panel/data-management/tenants`, `/products`, `/categories`, `/branches`.
+- Purpose: Admin data browsing/management.
+- Components: `TenantsContent`, `ProductsContent`, `CategoriesContent`, `BranchesContent`, `ComingSoonContent`.
+- Data/API:
+  - Tenants: `tenants.js` `/api/v1/tenants`.
+  - Products/categories/branches use corresponding admin/data hooks/services.
+- Actions: tenants support list/create/update/delete by service module; other sections are list/management screens as implemented.
+- Mobile notes: Each should be a list -> detail/edit pattern; avoid desktop multi-column tables.
+
+### Animal Lookup Management
+
+- Routes: `/:locale/admin-panel/animal-lookups/domains`, `/categories`, `/pet-types`, `/breeds`.
+- Purpose: Manage taxonomy used by animals/pets.
+- Components: `DomainsContent` + `DomainModal`, `CategoriesContent` + `CategoryModal`, `PetTypesContent` + `PetTypeModal`, `BreedsContent` + `BreedModal`.
+- Data/API: `animalLookups.js` get/create/update/delete for domains, categories, pet types, breeds.
+- Actions: create, edit, delete lookup records.
+- Forms: localized names/descriptions, relationship selectors such as domain/category/pet type depending on lookup level.
+- Mobile notes: Relationship selectors should be searchable dropdowns; consider drilldown taxonomy browser.
+
+### Add Animal / User Animal Management / Analytics
+
+- Routes: `/:locale/admin-panel/addAnimal`, `/userAnimalManagement`, `/analyticsDashboard`.
+- Purpose: Admin animal creation/management and analytics surfaces.
+- Data/API: animal/admin dashboard services as used by pages.
+- Mobile notes: Confirm product priority; these appear older/admin-specific and may overlap with shelter animal screens.
+
+## Role-Specific Dashboard Breakdown
+
+### Super Admin
+
+- Dashboard layout: admin gradient background, quick access dropdown, notification center, language switcher.
+- Visible main menu/quick access: Admin Dashboard, Marketplace Approvals, Provider Verification, Animal Lookups. Additional direct routes: Users, RBAC, Data Management, Subscriptions, Analytics, Register Owner, Add Animal.
+- Restrictions: intended for `session.user.is_superuser`; non-superusers stay in `/dashboard/*`.
+
+### Shop Owner
+
+- Dashboard layout: shared dashboard shell with purple primary color, sidebar tabs, branch selection in child lists.
+- Visible menu: Overview, Shops, Suppliers, Categories, Products, Inventory, Purchase Orders, Marketplace Orders, Marketplace Invoices, Developer API.
+- Restrictions: requires `shop_owner`; shop branch selection required for most CRUD screens.
+
+### Shelter Owner
+
+- Dashboard layout: shared dashboard shell with green primary color, route-backed sidebar, shelter selector/query param.
+- Visible menu: Overview, Shelters, Animals, Medical, Vaccinations, Kennel Management, Adoptions, Volunteers, Donations, Lost & Found, Animal Care.
+- Restrictions: requires `shelter`; feature menus hide/redirect according to shelter service flags.
+
+### Volunteer
+
+- Dashboard layout: shared dashboard shell with tabs inside a single route.
+- Visible menu: My Shifts; Apply only if not approved and not pending.
+- Restrictions: requires `volunteer`; sign-in/sign-out restricted by shift time windows.
+
+### Livestock Owner
+
+- Dashboard layout: standalone card dashboard, not shared sidebar.
+- Visible actions: My Animals, Health Records, Schedule, Marketplace.
+- Restrictions: requires `livestock_owner`.
+
+### Pet Owner Family
+
+- Dashboard layout: shared dashboard shell with blue primary color.
+- Visible menu: Overview, My Pets, Find Services, Bookings, Messages.
+- Restrictions: requires one of pet owner family roles. Medical/Favorites/Reviews guarded pages exist but are not in primary menu.
+
+### Provider Family
+
+- Dashboard layout: provider status gate, then shared dashboard shell.
+- Visible menu when approved: Overview, My Services, Bookings, Messages.
+- Restrictions: requires provider role and an approved provider profile for main dashboard; no profile shows onboarding; pending/rejected show status cards.
+
+## Navigation Map
+
+**Public**
+
+- Home -> Login/Register/Adopt/Donate/Lost & Found/Provider/Marketplace.
+- Adopt -> Adoption application -> Adoption contract.
+- Lost & Found -> Submit lost/found report.
+
+**Authenticated dashboard entry**
+
+- `/dashboard` resolves by role.
+- Multi-role users can use the side role switcher to jump to Shop, Shelter, Livestock, Volunteer, Pet Owner, or Provider dashboards.
+
+**Shop flow**
+
+- Shop Overview -> View All recent orders -> Marketplace Orders.
+- Branches create/update/delete feed branch selector.
+- Products -> Variants, imports, publish to marketplace -> Admin marketplace approvals.
+- Inventory and purchase orders depend on selected branch and variants.
+- Settings -> Marketplace Activation wizard -> generate API key -> activate marketplace.
+
+**Shelter flow**
+
+- Shelter Overview -> all shelter operations.
+- Animals -> Medical/Vaccinations/Adoptions/Kennel/Animal Care workflows by animal.
+- Lost & Found -> matches -> reunite or transfer found report to intake/animals.
+- Volunteers -> approve volunteer -> create shift -> volunteer signs in/out.
+- Adoptions -> detail -> status decision -> schedule event -> outcome -> contract.
+
+**Pet owner/provider flow**
+
+- Pet Owner Services -> Booking Request -> Provider Bookings.
+- Provider accepts/declines/completes -> Pet Owner Bookings payment/review.
+- Pet Owner/Provider Messages share chat threads.
+
+**Admin flow**
+
+- Admin Dashboard -> Quick Access.
+- Marketplace Approvals -> Product/Category queues -> detail -> approve/reject.
+- Provider Verification -> Pending/Approved/Rejected/Audit -> profile review -> approve/reject.
+- Animal Lookups -> Domains -> Categories -> Pet Types -> Breeds taxonomy.
+- Data Management -> Tenants/Products/Categories/Branches.
+
+## Global Mobile Adaptation Notes
+
+- Large `DataTable` screens should become searchable card lists with sort/filter bottom sheets and explicit selection mode.
+- Desktop hover-only actions must become visible overflow menus or swipe/action buttons.
+- Modals with complex forms should become full-screen native screens or sheets with save/cancel in the header/footer.
+- Charts should include accessible summaries; some placeholder charts may be lower priority than operational lists.
+- Locale/RTL must be first-class; Arabic text and right-to-left navigation are already supported on web.
+- File/image upload flows appear in products, animals, providers, imports, and lost/found; native rebuild should use camera/gallery/document pickers.
+- Location fields should use native maps where possible.
+- Time/date fields for shifts, bookings, events, vaccinations, and care logs should use native pickers.
+- Notifications/toasts are web-style; mobile should map important events to banners, snackbars, and push notifications where backend supports it.

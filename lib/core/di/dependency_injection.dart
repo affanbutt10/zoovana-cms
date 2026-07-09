@@ -49,6 +49,76 @@ import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/categories/domain/usecases/get_categories.dart';
 import '../../features/categories/domain/usecases/create_category.dart';
 
+// Chat data layer
+import '../../features/chat/data/datasources/chat_remote_datasource.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/chat/domain/usecases/get_chat_messages.dart';
+import '../../features/chat/domain/usecases/get_chat_threads.dart';
+import '../../features/chat/domain/usecases/mark_chat_thread_read.dart';
+import '../../features/chat/domain/usecases/send_chat_message.dart';
+
+// Pet owner data layer
+import '../../features/pet_owner/data/datasources/pet_owner_remote_datasource.dart';
+import '../../features/pet_owner/data/repositories/pet_owner_repository_impl.dart';
+import '../../features/pet_owner/domain/repositories/pet_owner_repository.dart';
+import '../../features/pet_owner/domain/usecases/create_pet.dart';
+import '../../features/pet_owner/domain/usecases/get_my_pets.dart';
+import '../../features/pet_owner/domain/usecases/get_pet_bookings.dart';
+import '../../features/pet_owner/domain/usecases/get_pet_owner_overview.dart';
+import '../../features/pet_owner/domain/usecases/request_pet_booking.dart';
+import '../../features/pet_owner/domain/usecases/search_pet_services.dart';
+
+// Provider data layer
+import '../../features/provider/data/datasources/provider_remote_datasource.dart';
+import '../../features/provider/data/repositories/provider_repository_impl.dart';
+import '../../features/provider/domain/repositories/provider_repository.dart';
+import '../../features/provider/domain/usecases/apply_provider_profile.dart';
+import '../../features/provider/domain/usecases/create_provider_service.dart';
+import '../../features/provider/domain/usecases/get_provider_bookings.dart';
+import '../../features/provider/domain/usecases/get_provider_overview.dart';
+import '../../features/provider/domain/usecases/get_provider_services.dart';
+import '../../features/provider/domain/usecases/update_provider_booking_status.dart';
+
+// Volunteer data layer
+import '../../features/volunteer/data/datasources/volunteer_remote_datasource.dart';
+import '../../features/volunteer/data/repositories/volunteer_repository_impl.dart';
+import '../../features/volunteer/domain/repositories/volunteer_repository.dart';
+import '../../features/volunteer/domain/usecases/apply_volunteer.dart';
+import '../../features/volunteer/domain/usecases/get_volunteer_applications.dart';
+import '../../features/volunteer/domain/usecases/get_volunteer_shelters.dart';
+import '../../features/volunteer/domain/usecases/get_volunteer_shifts.dart';
+import '../../features/volunteer/domain/usecases/sign_in_volunteer_shift.dart';
+import '../../features/volunteer/domain/usecases/sign_out_volunteer_shift.dart';
+
+// Shelter data layer
+import '../../features/shelter/data/datasources/shelter_remote_datasource.dart';
+import '../../features/shelter/data/repositories/shelter_repository_impl.dart';
+import '../../features/shelter/domain/repositories/shelter_repository.dart';
+import '../../features/shelter/domain/usecases/create_shelter_adoption.dart';
+import '../../features/shelter/domain/usecases/create_shelter_animal.dart';
+import '../../features/shelter/domain/usecases/create_shelter_kennel.dart';
+import '../../features/shelter/domain/usecases/create_shelter_medical_record.dart';
+import '../../features/shelter/domain/usecases/create_shelter_profile.dart';
+import '../../features/shelter/domain/usecases/create_shelter_vaccination.dart';
+import '../../features/shelter/domain/usecases/get_shelter_animal_care_tasks.dart';
+import '../../features/shelter/domain/usecases/get_shelter_adoptions.dart';
+import '../../features/shelter/domain/usecases/get_shelter_animals.dart';
+import '../../features/shelter/domain/usecases/get_shelter_donations.dart';
+import '../../features/shelter/domain/usecases/get_shelter_kennels.dart';
+import '../../features/shelter/domain/usecases/get_shelter_lost_found_reports.dart';
+import '../../features/shelter/domain/usecases/get_shelter_medical_records.dart';
+import '../../features/shelter/domain/usecases/get_shelter_operations.dart';
+import '../../features/shelter/domain/usecases/get_shelter_overview.dart';
+import '../../features/shelter/domain/usecases/get_shelter_profiles.dart';
+import '../../features/shelter/domain/usecases/get_shelter_vaccinations.dart';
+import '../../features/shelter/domain/usecases/get_shelter_volunteers.dart';
+import '../../features/shelter/domain/usecases/update_shelter_adoption_status.dart';
+import '../../features/shelter/domain/usecases/update_shelter_animal_care_status.dart';
+import '../../features/shelter/domain/usecases/update_shelter_donation_status.dart';
+import '../../features/shelter/domain/usecases/update_shelter_lost_found_status.dart';
+import '../../features/shelter/domain/usecases/update_shelter_volunteer_status.dart';
+
 // Product management data layer
 import '../../features/products_management/data/datasources/product_remote_datasource.dart';
 import '../../features/products_management/data/repositories/product_repository_impl.dart';
@@ -72,6 +142,21 @@ import '../../features/suppliers/presentation/controllers/supplier_controller.da
 // Category presentation controller
 import '../../features/categories/presentation/controllers/category_controller.dart';
 
+// Chat presentation controller
+import '../../features/chat/presentation/controllers/chat_controller.dart';
+
+// Pet owner presentation controller
+import '../../features/pet_owner/presentation/controllers/pet_owner_controller.dart';
+
+// Provider presentation controller
+import '../../features/provider/presentation/controllers/provider_controller.dart';
+
+// Volunteer presentation controller
+import '../../features/volunteer/presentation/controllers/volunteer_controller.dart';
+
+// Shelter presentation controller
+import '../../features/shelter/presentation/controllers/shelter_controller.dart';
+
 // Product management presentation controller
 import '../../features/products_management/presentation/controllers/product_management_controller.dart';
 
@@ -90,7 +175,10 @@ class DependencyInjection {
     // ── 1. Storage services ──────────────────────────────────────────────────
     getIt.registerSingleton<SecureStorageService>(SecureStorageServiceImpl());
     getIt.registerSingleton<LocalStorageService>(LocalStorageServiceImpl());
-    Get.put<SecureStorageService>(getIt<SecureStorageService>(), permanent: true);
+    Get.put<SecureStorageService>(
+      getIt<SecureStorageService>(),
+      permanent: true,
+    );
     Get.put<LocalStorageService>(getIt<LocalStorageService>(), permanent: true);
     debugPrint('DI STEP 1: Storage registered');
 
@@ -136,6 +224,24 @@ class DependencyInjection {
       ),
       instanceName: 'cmsDio',
     );
+
+    getIt.registerSingleton<Dio>(
+      DioFactory.createShelterDio(
+        secureStorage: getIt<SecureStorageService>(),
+        localStorage: getIt<LocalStorageService>(),
+        onForceSignOut: () => Get.find<AuthController>().forceSignOut(),
+      ),
+      instanceName: 'shelterDio',
+    );
+
+    getIt.registerSingleton<Dio>(
+      DioFactory.createPetCareDio(
+        secureStorage: getIt<SecureStorageService>(),
+        localStorage: getIt<LocalStorageService>(),
+        onForceSignOut: () => Get.find<AuthController>().forceSignOut(),
+      ),
+      instanceName: 'petCareDio',
+    );
     debugPrint('DI STEP 4: Dio registered');
 
     // ── 5. Remote data sources ───────────────────────────────────────────────
@@ -149,7 +255,7 @@ class DependencyInjection {
 
     getIt.registerLazySingleton<DashboardRemoteDatasource>(
       () => DashboardRemoteDatasourceImpl(
-        shopDio: getIt<Dio>(instanceName: 'cmsDio'),
+        shopDio: getIt<Dio>(instanceName: 'shopDio'),
       ),
     );
 
@@ -168,6 +274,36 @@ class DependencyInjection {
     getIt.registerLazySingleton<ProductRemoteDataSource>(
       () => ProductRemoteDataSourceImpl(
         shopDio: getIt<Dio>(instanceName: 'cmsDio'),
+      ),
+    );
+
+    getIt.registerLazySingleton<ChatRemoteDataSource>(
+      () => ChatRemoteDataSourceImpl(
+        cmsDio: getIt<Dio>(instanceName: 'petCareDio'),
+      ),
+    );
+
+    getIt.registerLazySingleton<PetOwnerRemoteDataSource>(
+      () => PetOwnerRemoteDataSourceImpl(
+        cmsDio: getIt<Dio>(instanceName: 'petCareDio'),
+      ),
+    );
+
+    getIt.registerLazySingleton<ProviderRemoteDataSource>(
+      () => ProviderRemoteDataSourceImpl(
+        cmsDio: getIt<Dio>(instanceName: 'petCareDio'),
+      ),
+    );
+
+    getIt.registerLazySingleton<VolunteerRemoteDataSource>(
+      () => VolunteerRemoteDataSourceImpl(
+        cmsDio: getIt<Dio>(instanceName: 'shelterDio'),
+      ),
+    );
+
+    getIt.registerLazySingleton<ShelterRemoteDataSource>(
+      () => ShelterRemoteDataSourceImpl(
+        cmsDio: getIt<Dio>(instanceName: 'shelterDio'),
       ),
     );
     debugPrint('DI STEP 5: Data sources registered');
@@ -211,24 +347,213 @@ class DependencyInjection {
         remoteDataSource: getIt<ProductRemoteDataSource>(),
       ),
     );
+
+    getIt.registerLazySingleton<ChatRepository>(
+      () => ChatRepositoryImpl(remoteDataSource: getIt<ChatRemoteDataSource>()),
+    );
+
+    getIt.registerLazySingleton<PetOwnerRepository>(
+      () => PetOwnerRepositoryImpl(
+        remoteDataSource: getIt<PetOwnerRemoteDataSource>(),
+      ),
+    );
+
+    getIt.registerLazySingleton<ProviderRepository>(
+      () => ProviderRepositoryImpl(
+        remoteDataSource: getIt<ProviderRemoteDataSource>(),
+      ),
+    );
+
+    getIt.registerLazySingleton<VolunteerRepository>(
+      () => VolunteerRepositoryImpl(
+        remoteDataSource: getIt<VolunteerRemoteDataSource>(),
+      ),
+    );
+
+    getIt.registerLazySingleton<ShelterRepository>(
+      () => ShelterRepositoryImpl(
+        remoteDataSource: getIt<ShelterRemoteDataSource>(),
+      ),
+    );
     debugPrint('DI STEP 6: Repositories registered');
 
     // ── 7. Use cases ─────────────────────────────────────────────────────────
     getIt.registerLazySingleton(() => LoginUseCase(getIt<AuthRepository>()));
     getIt.registerLazySingleton(() => RegisterUseCase(getIt<AuthRepository>()));
-    getIt.registerLazySingleton(() => VerifyEmailUseCase(getIt<AuthRepository>()));
-    getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt<AuthRepository>()));
-    getIt.registerLazySingleton(() => ResetPasswordUseCase(getIt<AuthRepository>()));
+    getIt.registerLazySingleton(
+      () => VerifyEmailUseCase(getIt<AuthRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => ForgotPasswordUseCase(getIt<AuthRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => ResetPasswordUseCase(getIt<AuthRepository>()),
+    );
     getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepository>()));
-    getIt.registerLazySingleton(() => RefreshTokenUseCase(getIt<AuthRepository>()));
+    getIt.registerLazySingleton(
+      () => RefreshTokenUseCase(getIt<AuthRepository>()),
+    );
     getIt.registerLazySingleton(() => ShopInitUseCase(getIt<ShopRepository>()));
-    getIt.registerLazySingleton(() => GetDashboardOverview(repository: getIt<DashboardRepository>()));
-    getIt.registerLazySingleton(() => GetSuppliers(repository: getIt<SupplierRepository>()));
-    getIt.registerLazySingleton(() => CreateSupplier(repository: getIt<SupplierRepository>()));
-    getIt.registerLazySingleton(() => GetCategories(repository: getIt<CategoryRepository>()));
-    getIt.registerLazySingleton(() => CreateCategory(repository: getIt<CategoryRepository>()));
-    getIt.registerLazySingleton(() => GetProducts(repository: getIt<ProductRepository>()));
-    getIt.registerLazySingleton(() => CreateProduct(repository: getIt<ProductRepository>()));
+    getIt.registerLazySingleton(
+      () => GetDashboardOverview(repository: getIt<DashboardRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetSuppliers(repository: getIt<SupplierRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateSupplier(repository: getIt<SupplierRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetCategories(repository: getIt<CategoryRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateCategory(repository: getIt<CategoryRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetProducts(repository: getIt<ProductRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateProduct(repository: getIt<ProductRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetChatThreads(repository: getIt<ChatRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetChatMessages(repository: getIt<ChatRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => SendChatMessage(repository: getIt<ChatRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => MarkChatThreadRead(repository: getIt<ChatRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetPetOwnerOverview(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetMyPets(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreatePet(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => SearchPetServices(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetPetBookings(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => RequestPetBooking(repository: getIt<PetOwnerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetProviderOverview(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => ApplyProviderProfile(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetProviderServices(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateProviderService(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetProviderBookings(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () =>
+          UpdateProviderBookingStatus(repository: getIt<ProviderRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetVolunteerShifts(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetVolunteerApplications(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetVolunteerShelters(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => ApplyVolunteer(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => SignInVolunteerShift(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => SignOutVolunteerShift(repository: getIt<VolunteerRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterOverview(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterOperations(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterProfiles(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterProfile(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterAnimals(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterAnimal(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterMedicalRecords(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterMedicalRecord(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterVaccinations(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterVaccination(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterKennels(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterKennel(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterAdoptions(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => CreateShelterAdoption(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => UpdateShelterAdoptionStatus(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterVolunteers(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () =>
+          UpdateShelterVolunteerStatus(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterDonations(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => UpdateShelterDonationStatus(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterLostFoundReports(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () =>
+          UpdateShelterLostFoundStatus(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () => GetShelterAnimalCareTasks(repository: getIt<ShelterRepository>()),
+    );
+    getIt.registerLazySingleton(
+      () =>
+          UpdateShelterAnimalCareStatus(repository: getIt<ShelterRepository>()),
+    );
     debugPrint('DI STEP 7: Use cases registered');
 
     // ── 8. GetX controllers ──────────────────────────────────────────────────
@@ -254,9 +579,7 @@ class DependencyInjection {
     );
 
     Get.put<DashboardController>(
-      DashboardController(
-        getDashboardOverview: getIt<GetDashboardOverview>(),
-      ),
+      DashboardController(getDashboardOverview: getIt<GetDashboardOverview>()),
       permanent: true,
     );
 
@@ -280,6 +603,81 @@ class DependencyInjection {
       ProductManagementController(
         getProducts: getIt<GetProducts>(),
         createProduct: getIt<CreateProduct>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<ChatController>(
+      ChatController(
+        getChatThreads: getIt<GetChatThreads>(),
+        getChatMessages: getIt<GetChatMessages>(),
+        sendChatMessage: getIt<SendChatMessage>(),
+        markChatThreadRead: getIt<MarkChatThreadRead>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<PetOwnerController>(
+      PetOwnerController(
+        getOverview: getIt<GetPetOwnerOverview>(),
+        getMyPets: getIt<GetMyPets>(),
+        createPet: getIt<CreatePet>(),
+        searchServices: getIt<SearchPetServices>(),
+        getBookings: getIt<GetPetBookings>(),
+        requestBooking: getIt<RequestPetBooking>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<ProviderController>(
+      ProviderController(
+        getOverview: getIt<GetProviderOverview>(),
+        applyProfile: getIt<ApplyProviderProfile>(),
+        getServices: getIt<GetProviderServices>(),
+        createService: getIt<CreateProviderService>(),
+        getBookings: getIt<GetProviderBookings>(),
+        updateBookingStatus: getIt<UpdateProviderBookingStatus>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<VolunteerController>(
+      VolunteerController(
+        getShifts: getIt<GetVolunteerShifts>(),
+        getApplications: getIt<GetVolunteerApplications>(),
+        getShelters: getIt<GetVolunteerShelters>(),
+        applyVolunteer: getIt<ApplyVolunteer>(),
+        signInShift: getIt<SignInVolunteerShift>(),
+        signOutShift: getIt<SignOutVolunteerShift>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<ShelterController>(
+      ShelterController(
+        getOverview: getIt<GetShelterOverview>(),
+        getOperations: getIt<GetShelterOperations>(),
+        getShelters: getIt<GetShelterProfiles>(),
+        createShelter: getIt<CreateShelterProfile>(),
+        getAnimals: getIt<GetShelterAnimals>(),
+        createAnimal: getIt<CreateShelterAnimal>(),
+        getMedicalRecords: getIt<GetShelterMedicalRecords>(),
+        createMedicalRecord: getIt<CreateShelterMedicalRecord>(),
+        getVaccinations: getIt<GetShelterVaccinations>(),
+        createVaccination: getIt<CreateShelterVaccination>(),
+        getKennels: getIt<GetShelterKennels>(),
+        createKennel: getIt<CreateShelterKennel>(),
+        getAdoptions: getIt<GetShelterAdoptions>(),
+        createAdoption: getIt<CreateShelterAdoption>(),
+        updateAdoptionStatus: getIt<UpdateShelterAdoptionStatus>(),
+        getVolunteers: getIt<GetShelterVolunteers>(),
+        updateVolunteerStatus: getIt<UpdateShelterVolunteerStatus>(),
+        getDonations: getIt<GetShelterDonations>(),
+        updateDonationStatus: getIt<UpdateShelterDonationStatus>(),
+        getLostFoundReports: getIt<GetShelterLostFoundReports>(),
+        updateLostFoundStatus: getIt<UpdateShelterLostFoundStatus>(),
+        getAnimalCareTasks: getIt<GetShelterAnimalCareTasks>(),
+        updateAnimalCareStatus: getIt<UpdateShelterAnimalCareStatus>(),
       ),
       permanent: true,
     );

@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
 import '../../../../routes/app_routes.dart';
 import '../../../../shared/widgets/app_logo.dart';
+import '../../../../shared/widgets/ios_dashboard_chrome.dart';
+import '../../../../shared/widgets/role_dashboard_components.dart';
+import '../../../../shared/widgets/role_dashboard_drawer.dart';
 
 /// Generic Dashboard
-/// 
+///
 /// A fallback dashboard for roles that don't have a specific dashboard implementation.
 /// Displays basic user information and common actions.
 class GenericDashboard extends StatelessWidget {
   final String roleName;
-  
-  const GenericDashboard({
-    super.key,
-    required this.roleName,
-  });
+
+  const GenericDashboard({super.key, required this.roleName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const RoleDashboardDrawer(),
+      onDrawerChanged: RoleDashboardDrawerController.setOpen,
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -29,7 +32,8 @@ class GenericDashboard extends StatelessWidget {
           SliverAppBar(
             pinned: true,
             floating: false,
-            backgroundColor: AppColors.background,
+            backgroundColor: Colors.transparent,
+            flexibleSpace: buildFrostedAppBarBackground(),
             surfaceTintColor: Colors.transparent,
             shadowColor: AppColors.divider,
             elevation: 0,
@@ -37,6 +41,15 @@ class GenericDashboard extends StatelessWidget {
             toolbarHeight: 60,
             titleSpacing: 16,
             automaticallyImplyLeading: false,
+            leading: Builder(
+              builder: (context) => Center(
+                child: IosIconButton(
+                  tooltip: 'Open menu',
+                  icon: CupertinoIcons.line_horizontal_3,
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
+            ),
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -46,14 +59,21 @@ class GenericDashboard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_capitalize(roleName),
-                        style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textSecondary, fontSize: 11)),
-                    Text('Dashboard',
-                        style: AppTextStyles.titleMedium.copyWith(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.primary)),
+                    Text(
+                      _capitalize(roleName),
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      'Home Page',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -64,11 +84,12 @@ class GenericDashboard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _AppBarBtn(icon: Icons.notifications_none_rounded, onTap: () {}),
+                    _AppBarBtn(icon: CupertinoIcons.bell, onTap: () {}),
                     const SizedBox(width: 8),
                     _AppBarBtn(
-                        icon: Icons.settings_outlined,
-                        onTap: () => context.push(AppRoutes.settings)),
+                      icon: CupertinoIcons.gear,
+                      onTap: () => context.push(AppRoutes.settings),
+                    ),
                   ],
                 ),
               ),
@@ -82,73 +103,20 @@ class GenericDashboard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Welcome Card
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: AppColors.primaryGradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.dashboard_rounded, color: Colors.white, size: 32),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Welcome!',
-                                  style: AppTextStyles.titleLarge.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900)),
-                              Text('${_capitalize(roleName)} Dashboard',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.9))),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  RoleDashboardHeader(
+                    eyebrow: '${_capitalize(roleName)} workspace',
+                    title: 'Welcome to Zoovana',
+                    subtitle:
+                        'Your role-specific tools will appear here as soon as this workspace is configured.',
+                    icon: CupertinoIcons.square_grid_2x2_fill,
+                    accent: AppColors.accentLight,
                   ),
                   const SizedBox(height: 24),
-
-                  // Info Card
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: AppColors.primary, size: 48),
-                        const SizedBox(height: 16),
-                        Text('Dashboard Coming Soon',
-                            style: AppTextStyles.titleMedium.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 8),
-                        Text(
-                          'The ${_capitalize(roleName)} dashboard is currently under development. Check back soon for role-specific features and tools.',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
+                  RoleStatePanel(
+                    title: 'Dashboard coming soon',
+                    message:
+                        'The ${_capitalize(roleName)} dashboard is being prepared with role-specific tools and shortcuts.',
+                    icon: CupertinoIcons.sparkles,
                   ),
                 ],
               ),
@@ -170,22 +138,10 @@ class _AppBarBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: Icon(icon, size: 19, color: AppColors.textSecondary),
-        ),
-      ),
+    return IosIconButton(
+      icon: icon,
+      onTap: onTap,
+      foregroundColor: AppColors.textSecondary,
     );
   }
 }

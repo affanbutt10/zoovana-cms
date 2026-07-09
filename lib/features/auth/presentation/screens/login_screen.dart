@@ -11,7 +11,9 @@ import '../controllers/auth_controller.dart';
 
 /// Premium Login screen with animated aesthetics and GoRouter navigation.
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.accountRequired = false});
+
+  final bool accountRequired;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -69,17 +71,29 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   String _errorMessage(AppError error) {
-    if (error.unauthorized) return 'Invalid email or password.';
-    if (error.networkError) return 'No internet connection. Please check your network.';
-    if (error.forbidden) return 'Access denied. Please contact support.';
-    if (error.validationErrors) return error.message;
-    if (error.serverError) return 'Server error. Please try again later.';
+    if (error.unauthorized) {
+      return 'Invalid email or password.';
+    }
+    if (error.networkError) {
+      return 'No internet connection. Please check your network.';
+    }
+    if (error.forbidden) {
+      return 'Access denied. Please contact support.';
+    }
+    if (error.validationErrors) {
+      return error.message;
+    }
+    if (error.serverError) {
+      return 'Server error. Please try again later.';
+    }
     return error.message.isNotEmpty ? error.message : 'Something went wrong.';
   }
 
   Future<void> _submit() async {
     setState(() => _authError = null);
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     final authController = Get.find<AuthController>();
     await authController.login(
@@ -92,7 +106,8 @@ class _LoginScreenState extends State<LoginScreen>
     if (status == AuthStatus.unauthenticated) {
       setState(() {
         // Use the real error from the controller if available
-        _authError = authController.lastLoginError.value ??
+        _authError =
+            authController.lastLoginError.value ??
             AppError.unauthorized('Invalid email or password.');
       });
     }
@@ -144,7 +159,40 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 40),
+                        if (widget.accountRequired) ...[
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.infoLight,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Please sign in to access this page. Guests can browse Home and Lost & Found.',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.infoDark,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 28),
 
                         // Glassmorphism Card
                         Container(
@@ -155,9 +203,9 @@ class _LoginScreenState extends State<LoginScreen>
                             border: Border.all(color: AppColors.glassBorder),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 40,
-                                offset: const Offset(0, 20),
+                                color: Colors.black.withValues(alpha: 0.10),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
@@ -465,9 +513,9 @@ class _PremiumButton extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
       ),

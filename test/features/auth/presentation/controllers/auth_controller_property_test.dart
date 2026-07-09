@@ -79,8 +79,7 @@ class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository(this._storage);
 
   @override
-  Future<Result<AuthSessionEntity>> login(
-      String email, String password) async {
+  Future<Result<AuthSessionEntity>> login(String email, String password) async {
     final session = AuthSessionEntity(
       accessToken: 'fake_access_token',
       refreshToken: 'fake_refresh_token',
@@ -112,15 +111,15 @@ class FakeAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String fullName,
-    String? roleId,
+    List<String> roleIds = const [],
     String? phoneNumber,
-  }) async =>
-      const Success(null);
+  }) async => const Success(null);
 
   @override
-  Future<Result<void>> verifyEmail(
-          {required String email, required String otp}) async =>
-      const Success(null);
+  Future<Result<void>> verifyEmail({
+    required String email,
+    required String otp,
+  }) async => const Success(null);
 
   @override
   Future<Result<void>> resendVerification(String email) async =>
@@ -131,17 +130,17 @@ class FakeAuthRepository implements AuthRepository {
       const Success(null);
 
   @override
-  Future<Result<void>> verifyOtp(
-          {required String email, required String otp}) async =>
-      const Success(null);
+  Future<Result<void>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async => const Success(null);
 
   @override
   Future<Result<void>> resetPassword({
     required String email,
     required String otp,
     required String newPassword,
-  }) async =>
-      const Success(null);
+  }) async => const Success(null);
 
   @override
   Future<Result<String>> refreshToken(String refreshToken) async =>

@@ -210,8 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                           border: Border.all(color: AppColors.divider),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 16,
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
                           ],

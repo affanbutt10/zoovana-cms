@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_colors.dart';
 import '../../../../core/config/app_text_styles.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../../shop/presentation/controllers/shop_init_controller.dart';
 import '../controllers/product_management_controller.dart';
 import 'add_product_screen.dart';
@@ -14,8 +15,7 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
 
   @override
   Widget build(BuildContext context) {
-    final branchId =
-        Get.find<ShopInitController>().activeBranchId.value;
+    final branchId = Get.find<ShopInitController>().activeBranchId.value;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (controller.status.value == ProductMgmtStatus.idle) {
@@ -37,8 +37,11 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
             scrolledUnderElevation: 1,
             toolbarHeight: 60,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: AppColors.textPrimary, size: 20),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
               onPressed: () => context.pop(),
             ),
             title: Row(
@@ -51,14 +54,20 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
                     color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Icon(Icons.inventory_2_rounded,
-                      color: AppColors.primary, size: 17),
+                  child: Icon(
+                    Icons.inventory_2_rounded,
+                    color: AppColors.primary,
+                    size: 17,
+                  ),
                 ),
                 const SizedBox(width: 10),
-                Text('Products',
-                    style: AppTextStyles.titleMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800)),
+                Text(
+                  'Products',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
             actions: [
@@ -83,8 +92,11 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.add_rounded,
-                        color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   onPressed: () => _showAddProduct(context, branchId),
                 ),
@@ -99,7 +111,9 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
               return SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(
-                      color: AppColors.primary, strokeWidth: 3),
+                    color: AppColors.primary,
+                    strokeWidth: 3,
+                  ),
                 ),
               );
             }
@@ -134,7 +148,9 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Center(
                             child: CircularProgressIndicator(
-                                color: AppColors.primary, strokeWidth: 2),
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
                           ),
                         );
                       }
@@ -154,7 +170,8 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
                       onTap: () => ProductDetailSheet.show(context, product),
                     );
                   },
-                  childCount: controller.products.length +
+                  childCount:
+                      controller.products.length +
                       (controller.hasMore.value ? 1 : 0),
                 ),
               ),
@@ -166,7 +183,7 @@ class ProductsManagementScreen extends GetView<ProductManagementController> {
   }
 
   void _showAddProduct(BuildContext context, String branchId) {
-    showModalBottomSheet(
+    showPremiumBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -205,20 +222,20 @@ class _ProductCard extends StatelessWidget {
     final stockColor = isOutOfStock
         ? AppColors.error
         : isLowStock
-            ? AppColors.warning
-            : AppColors.success;
+        ? AppColors.warning
+        : AppColors.success;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceAtElevation(1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -230,103 +247,131 @@ class _ProductCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
-          children: [
-            // Thumbnail
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: imageUrl != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
+              children: [
+                // Thumbnail
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Icon(
                               Icons.inventory_2_rounded,
                               color: AppColors.primary,
-                              size: 28)),
-                    )
-                  : Icon(Icons.inventory_2_rounded,
-                      color: AppColors.primary, size: 28),
-            ),
-            const SizedBox(width: 14),
+                              size: 28,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.inventory_2_rounded,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
+                ),
+                const SizedBox(width: 14),
 
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name,
-                      style: AppTextStyles.labelLarge.copyWith(
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  if (categoryName != null) ...[
-                    const SizedBox(height: 3),
-                    Text(categoryName!,
-                        style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textSecondary, fontSize: 11),
+                          fontSize: 14,
+                        ),
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                  ],
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text('SAR ${price.toStringAsFixed(2)}',
-                          style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13)),
-                      const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: stockColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                              color: stockColor.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          isOutOfStock ? 'Out of stock' : '$stock in stock',
-                          style: AppTextStyles.labelSmall.copyWith(
-                              color: stockColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 10),
-                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (variantCount > 0) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                      if (categoryName != null) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          categoryName!,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
                           ),
-                          child: Text('$variantCount variants',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.accent,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 10)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            'SAR ${price.toStringAsFixed(2)}',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: stockColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: stockColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              isOutOfStock ? 'Out of stock' : '$stock in stock',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: stockColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                          if (variantCount > 0) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '$variantCount variants',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.textTertiary, size: 20),
-          ],
-        ),
-      ),
+          ),
         ),
       ),
     );
@@ -352,16 +397,20 @@ class _ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, color: AppColors.error, size: 48),
             const SizedBox(height: 16),
-            Text(message,
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center),
+            Text(
+              message,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Retry'),
             ),
           ],
@@ -383,18 +432,27 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined,
-                color: AppColors.textTertiary, size: 64),
+            Icon(
+              Icons.inventory_2_outlined,
+              color: AppColors.textTertiary,
+              size: 64,
+            ),
             const SizedBox(height: 16),
-            Text('No products yet',
-                style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w700)),
+            Text(
+              'No products yet',
+              style: AppTextStyles.titleMedium.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Add your first product to get started',
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center),
+            Text(
+              'Add your first product to get started',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: onAdd,
@@ -403,8 +461,10 @@ class _EmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],

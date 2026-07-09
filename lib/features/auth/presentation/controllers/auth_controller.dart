@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 
 import '../../../../core/error/app_error.dart';
@@ -87,9 +89,8 @@ class AuthController extends GetxController {
     // A real JWT always starts with "eyJ" (base64-encoded {"alg":...}).
     // Reject anything else — this clears leftover mock/dev tokens that
     // iOS Keychain persists across app reinstalls.
-    final isValidJwt = token != null &&
-        token.isNotEmpty &&
-        token.startsWith('eyJ');
+    final isValidJwt =
+        token != null && token.isNotEmpty && token.startsWith('eyJ');
     if (!isValidJwt) {
       await _secureStorage.deleteAllTokens();
       status.value = AuthStatus.unauthenticated;
@@ -102,24 +103,34 @@ class AuthController extends GetxController {
       final localStorage = Get.find<LocalStorageService>();
       final roleController = Get.find<RoleController>();
 
-      final userId = await localStorage.getString(LocalStorageKeys.userId) ?? '';
+      final userId =
+          await localStorage.getString(LocalStorageKeys.userId) ?? '';
       final email = await localStorage.getString(LocalStorageKeys.email) ?? '';
-      final fullName = await localStorage.getString(LocalStorageKeys.fullName) ?? '';
-      final isSuperuser = await localStorage.getBool(LocalStorageKeys.isSuperuser) ?? false;
+      final fullName =
+          await localStorage.getString(LocalStorageKeys.fullName) ?? '';
+      final isSuperuser =
+          await localStorage.getBool(LocalStorageKeys.isSuperuser) ?? false;
       // Default true — if not stored yet, assume verified to avoid redirect loop
-      final isEmailVerified = await localStorage.getBool(LocalStorageKeys.isEmailVerified) ?? true;
-      final defaultTenantId = await localStorage.getString(LocalStorageKeys.defaultTenantId) ?? '';
+      final isEmailVerified =
+          await localStorage.getBool(LocalStorageKeys.isEmailVerified) ?? true;
+      final defaultTenantId =
+          await localStorage.getString(LocalStorageKeys.defaultTenantId) ?? '';
 
       // Wait for RoleController.onInit to finish restoring selectedRole
       // (it runs async in onInit, give it a moment)
       await Future.delayed(const Duration(milliseconds: 50));
 
-      // Build roles list from the restored selectedRole if available
+      final storedRolesJson = await localStorage.getString(
+        LocalStorageKeys.assignedRoles,
+      );
       final restoredRole = roleController.selectedRole.value;
-      final roles = restoredRole != null ? [restoredRole] : <RoleEntity>[];
+      final roles = _decodeStoredRoles(storedRolesJson);
+      if (roles.isEmpty && restoredRole != null) {
+        roles.add(restoredRole);
+      }
 
       // Populate the roles list in RoleController so it's consistent
-      if (roles.isNotEmpty && roleController.roles.isEmpty) {
+      if (roles.isNotEmpty) {
         roleController.roles.assignAll(roles);
       }
 
@@ -142,7 +153,9 @@ class AuthController extends GetxController {
       // If the user previously completed shop init (activeBranchId is stored),
       // mark ShopInitController as ready so the redirect guard doesn't force
       // /shop-init on every restart.
-      final activeBranchId = await localStorage.getString(LocalStorageKeys.activeBranchId);
+      final activeBranchId = await localStorage.getString(
+        LocalStorageKeys.activeBranchId,
+      );
       if (activeBranchId != null && activeBranchId.isNotEmpty) {
         try {
           final shopInitController = Get.find<ShopInitController>();
@@ -159,6 +172,28 @@ class AuthController extends GetxController {
     }
 
     status.value = AuthStatus.authenticated;
+  }
+
+  List<RoleEntity> _decodeStoredRoles(String? encoded) {
+    if (encoded == null || encoded.isEmpty) return <RoleEntity>[];
+    try {
+      final decoded = jsonDecode(encoded);
+      if (decoded is! List) return <RoleEntity>[];
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map((role) {
+            return RoleEntity(
+              id: (role['id'] ?? '').toString(),
+              name: (role['name'] ?? '').toString(),
+              scope: (role['scope'] ?? 'tenant').toString(),
+              description: (role['description'] ?? '').toString(),
+            );
+          })
+          .where((role) => role.id.isNotEmpty && role.name.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return <RoleEntity>[];
+    }
   }
 
   // ---------------------------------------------------------------------------
